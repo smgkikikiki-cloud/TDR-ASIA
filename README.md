@@ -76,7 +76,7 @@ For separate product hostnames also configure `NEXT_PUBLIC_ASIA_URL`, `NEXT_PUBL
 
 Optional LINE push:
 
-- `LINE_CHANNEL_ACCESS_TOKEN`
+- `LINE_CHANNEL_ACCESS_TOKEN=
 - `LINE_USER_ID`
 
 The Supabase URL and publishable key in `.env.example` are public-client identifiers, not service secrets.
