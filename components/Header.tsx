@@ -2,7 +2,7 @@ import Link from "next/link";
 import { site } from "@/content/site";
 
 export function Header(){return <>
-  <div className="utility"><div className="shell utilityInner"><div className="utilityLeft"><span>Bangkok, Thailand</span><span className="utilitySep">•</span><span>Technology · Manufacturing · Investment</span></div><div className="utilityRight"><Link href="/latest">Latest News</Link><Link href="/about">About</Link></div></div></div>
+  <div className="utility"><div className="shell utilityInner"><div className="utilityLeft"><span>Bangkok, Thailand</span><span className="utilitySep">•</span><span>Technology · Manufacturing · Investment</span></div><div className="utilityRight"><Link href="/latest">Latest News</Link><Link href="/about">About</Link><Link href="/account">Account</Link></div></div></div>
   <header className="masthead">
     <div className="shell mastheadInner">
       <div className="editionMark">BUSINESS &amp; TECHNOLOGY</div>
