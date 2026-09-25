@@ -143,14 +143,15 @@ export async function listDistributionItems(storyId: string): Promise<Distributi
   return rows.map(mapDistributionItem);
 }
 
-export async function listReadyQueueItems(): Promise<QueueItem[]> {
+export async function listQueueItems(): Promise<QueueItem[]> {
   if (!configured()) return [];
   const [rows, stories] = await Promise.all([
-    rest<any[]>("distribution_items?select=*&status=eq.ready&order=updated_at.desc"),
+    rest<any[]>("distribution_items?select=*&order=updated_at.desc"),
     listNewsroomStories(),
   ]);
   const storyById = new Map(stories.map((story) => [story.id, story]));
   return rows.flatMap((row) => {
+    if (row.status === "posted") return [];
     const story = storyById.get(row.story_id);
     if (!story) return [];
     return [{
