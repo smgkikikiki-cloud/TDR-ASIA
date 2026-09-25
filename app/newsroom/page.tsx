@@ -3,6 +3,8 @@ import { listNewsroomStories } from "@/lib/newsroom-store";
 import { MakeStoryButton } from "@/components/newsroom/MakeStoryButton";
 import { NewsroomQueue } from "@/components/newsroom/NewsroomQueue";
 import { NewsroomHealthPanel } from "@/components/newsroom/NewsroomHealth";
+import { NewsroomPostConfirm } from "@/components/newsroom/NewsroomPostConfirm";
+import { NewsroomPerformancePanel } from "@/components/newsroom/NewsroomPerformance";
 
 export const metadata = {
   title: "Super Newsroom | TDR",
@@ -40,7 +42,7 @@ export default async function NewsroomPage() {
     { label: "New radar", value: String(radar.length), note: "Unprocessed candidates already in the newsroom" },
     { label: "Stories", value: String(stories.length), note: "Candidates promoted into newsroom stories" },
     { label: "Queue", value: "Live", note: "Draft → ready workflow for Facebook and X" },
-    { label: "Winners", value: "—", note: "Posts outperforming baseline" },
+    { label: "Winners", value: "Live", note: "Manual performance snapshots and baseline classification" },
   ];
 
   return (
@@ -55,8 +57,8 @@ export default async function NewsroomPage() {
             </p>
           </div>
           <div style={{ textAlign: "right", fontSize: 12, lineHeight: 1.5, color: "#555" }}>
-            <b style={{ display: "block", color: "#111" }}>Chunk 9</b>
-            Hourly automation + health desk
+            <b style={{ display: "block", color: "#111" }}>Chunk 13</b>
+            Performance / Winners manual-first
           </div>
         </header>
 
@@ -133,7 +135,7 @@ export default async function NewsroomPage() {
                   ["Outputs", "FB + X drafts live", true],
                   ["Queue", "Draft + ready live", true],
                   ["Health", "Needs You live", true],
-                  ["Winners", "Later", false],
+                  ["Winners", "Performance live", true],
                 ].map(([name, description, live]) => (
                   <div key={String(name)} style={{ padding: "10px 0", borderTop: "1px solid #eee", display: "flex", justifyContent: "space-between", gap: 10 }}>
                     <b>{String(name)}</b>
@@ -162,6 +164,8 @@ export default async function NewsroomPage() {
         </div>
 
         <NewsroomQueue />
+        <NewsroomPostConfirm />
+        <NewsroomPerformancePanel />
       </div>
     </main>
   );
