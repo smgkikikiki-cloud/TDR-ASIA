@@ -101,7 +101,7 @@ export async function getNewsroomHealth(): Promise<NewsroomHealth> {
   }
 
   for (const job of jobs.filter((row) => row.status === "completed" && inLast24h(row.completed_at) && Array.isArray(row.result?.errors) && row.result.errors.length).slice(0, 5)) {
-    const first = row.result.errors[0];
+    const first = job.result.errors[0];
     attention.push({
       kind: "partial",
       title: "Automation completed with an error",
