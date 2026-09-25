@@ -1,0 +1,115 @@
+export const metadata = {
+  title: "Super Newsroom | TDR",
+  robots: { index: false, follow: false },
+};
+
+export const dynamic = "force-dynamic";
+
+const stats = [
+  { label: "New radar", value: "—", note: "Incoming story candidates" },
+  { label: "Ready", value: "—", note: "FB / X packages ready" },
+  { label: "Needs you", value: "—", note: "Only decisions that need a human" },
+  { label: "Winners", value: "—", note: "Posts outperforming baseline" },
+];
+
+const sections = [
+  {
+    title: "Radar",
+    copy: "Fresh news, data signals and opportunities ranked for growth and routing value.",
+    action: "Open radar",
+  },
+  {
+    title: "Stories",
+    copy: "Canonical story workspace before anything is turned into Facebook, X or an article.",
+    action: "Open stories",
+  },
+  {
+    title: "Queue",
+    copy: "Facebook and X packages that are ready, scheduled, posted or waiting for approval.",
+    action: "Open queue",
+  },
+  {
+    title: "Winners",
+    copy: "Breakouts, rising posts and follow-up opportunities worth exploiting while momentum is alive.",
+    action: "Open winners",
+  },
+  {
+    title: "Sources",
+    copy: "Discovery source registry, priorities and health. Existing TDR Asia sources will plug in here.",
+    action: "Open sources",
+  },
+];
+
+export default function NewsroomPage() {
+  return (
+    <main style={{ minHeight: "100vh", background: "#f3f1ec", color: "#151515" }}>
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "28px 24px 64px" }}>
+        <header style={{ display: "flex", justifyContent: "space-between", gap: 24, alignItems: "flex-end", borderBottom: "3px solid #111", paddingBottom: 18 }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", marginBottom: 8 }}>TDR Group</div>
+            <h1 style={{ fontSize: "clamp(34px,5vw,62px)", lineHeight: .95, margin: 0, letterSpacing: "-.04em" }}>Super Newsroom</h1>
+            <p style={{ maxWidth: 720, margin: "14px 0 0", fontSize: 17, lineHeight: 1.5, color: "#4d4d4d" }}>
+              One control room for finding stories, preparing Facebook and X, routing attention into TDR Auto / TDR Asia / TDR Mega, and catching winners early.
+            </p>
+          </div>
+          <div style={{ textAlign: "right", fontSize: 12, lineHeight: 1.5, color: "#555" }}>
+            <b style={{ display: "block", color: "#111" }}>Chunk 1</b>
+            UI shell only — no automation changed
+          </div>
+        </header>
+
+        <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 12, marginTop: 20 }}>
+          {stats.map((item) => (
+            <article key={item.label} style={{ background: "#fff", border: "1px solid #d8d4cc", padding: 18 }}>
+              <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: ".08em", fontWeight: 800 }}>{item.label}</div>
+              <div style={{ fontSize: 38, fontWeight: 850, lineHeight: 1, margin: "14px 0 8px" }}>{item.value}</div>
+              <div style={{ fontSize: 13, color: "#666", lineHeight: 1.4 }}>{item.note}</div>
+            </article>
+          ))}
+        </section>
+
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(260px,1fr)", gap: 18, marginTop: 24 }}>
+          <section style={{ background: "#fff", borderTop: "5px solid #111" }}>
+            <div style={{ padding: "16px 18px", borderBottom: "1px solid #ddd" }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Operations</div>
+              <h2 style={{ margin: "4px 0 0", fontSize: 26 }}>Newsroom desks</h2>
+            </div>
+            {sections.map((section) => (
+              <div key={section.title} style={{ display: "grid", gridTemplateColumns: "150px minmax(0,1fr) auto", gap: 18, alignItems: "center", padding: "18px", borderBottom: "1px solid #e5e1da" }}>
+                <strong style={{ fontSize: 18 }}>{section.title}</strong>
+                <p style={{ margin: 0, color: "#555", lineHeight: 1.5, fontSize: 14 }}>{section.copy}</p>
+                <button disabled style={{ border: "1px solid #bbb", background: "#f5f5f5", padding: "9px 12px", fontWeight: 700, color: "#888", cursor: "not-allowed" }}>{section.action}</button>
+              </div>
+            ))}
+          </section>
+
+          <aside style={{ display: "grid", gap: 18, alignContent: "start" }}>
+            <section style={{ background: "#111", color: "#fff", padding: 20 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", opacity: .7 }}>Human attention</div>
+              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>Exception only</h2>
+              <p style={{ margin: 0, lineHeight: 1.55, color: "#d8d8d8", fontSize: 14 }}>
+                The finished system should interrupt you only for ambiguous stories, approval-required posts, failures and breakout follow-ups.
+              </p>
+            </section>
+
+            <section style={{ background: "#fff", border: "1px solid #d8d4cc", padding: 18 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Destinations</div>
+              <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
+                {[
+                  ["TDR Auto", "Automotive data, compare, prices"],
+                  ["TDR Asia", "Industry and investment"],
+                  ["TDR Mega", "Infrastructure and projects"],
+                ].map(([name, description]) => (
+                  <div key={name} style={{ padding: "10px 0", borderTop: "1px solid #eee" }}>
+                    <b>{name}</b>
+                    <div style={{ marginTop: 3, fontSize: 12, color: "#666" }}>{description}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </main>
+  );
+}
