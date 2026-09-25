@@ -2,6 +2,7 @@ import { readCms } from "@/lib/cms-store";
 import { listNewsroomStories } from "@/lib/newsroom-store";
 import { MakeStoryButton } from "@/components/newsroom/MakeStoryButton";
 import { NewsroomQueue } from "@/components/newsroom/NewsroomQueue";
+import { NewsroomHealthPanel } from "@/components/newsroom/NewsroomHealth";
 
 export const metadata = {
   title: "Super Newsroom | TDR",
@@ -54,8 +55,8 @@ export default async function NewsroomPage() {
             </p>
           </div>
           <div style={{ textAlign: "right", fontSize: 12, lineHeight: 1.5, color: "#555" }}>
-            <b style={{ display: "block", color: "#111" }}>Chunk 6</b>
-            Draft → ready queue live
+            <b style={{ display: "block", color: "#111" }}>Chunk 9</b>
+            Hourly automation + health desk
           </div>
         </header>
 
@@ -103,19 +104,13 @@ export default async function NewsroomPage() {
               );
             }) : (
               <div style={{ padding: 28, color: "#666" }}>
-                No unprocessed candidates. Existing discovery can populate this without any newsroom schema change.
+                No unprocessed candidates. Hourly discovery can populate this radar.
               </div>
             )}
           </section>
 
           <aside style={{ display: "grid", gap: 18, alignContent: "start" }}>
-            <section style={{ background: "#111", color: "#fff", padding: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", opacity: .7 }}>Human attention</div>
-              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>Approve only what is ready</h2>
-              <p style={{ margin: 0, lineHeight: 1.55, color: "#d8d8d8", fontSize: 14 }}>
-                Generate and edit Facebook/X drafts inside a Story, then promote only finished copy into the ready queue. This chunk still does not publish anything.
-              </p>
-            </section>
+            <NewsroomHealthPanel />
 
             <section style={{ background: "#fff", border: "1px solid #d8d4cc", padding: 18 }}>
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Recent stories</div>
@@ -133,10 +128,11 @@ export default async function NewsroomPage() {
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Desks</div>
               <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
                 {[
-                  ["Radar", "Live", true],
+                  ["Radar", "Hourly", true],
                   ["Stories", "Editor live", true],
                   ["Outputs", "FB + X drafts live", true],
                   ["Queue", "Draft + ready live", true],
+                  ["Health", "Needs You live", true],
                   ["Winners", "Later", false],
                 ].map(([name, description, live]) => (
                   <div key={String(name)} style={{ padding: "10px 0", borderTop: "1px solid #eee", display: "flex", justifyContent: "space-between", gap: 10 }}>
