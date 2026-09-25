@@ -56,6 +56,7 @@ Production server variables required: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY
 - live read-only Radar from the existing candidate pool;
 - a minimal `stories` table in Supabase;
 - `Make Story` to promote one candidate into one idempotent newsroom Story;
+- duplicate clicks/concurrent requests resolve to the same Story;
 - no Facebook/X generation or publishing yet.
 
 The write endpoint is protected by the existing `ADMIN_TOKEN` mechanism and the `stories` table is service-role only.
