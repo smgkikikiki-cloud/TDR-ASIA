@@ -1,0 +1,27 @@
+name: Build TDR ASIA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Typecheck and build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://buzjcgdbtjashzjydxwj.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ajn67foN3IhTzXVr8Tfj9g_eSESnyWC
+        run: npm run check
