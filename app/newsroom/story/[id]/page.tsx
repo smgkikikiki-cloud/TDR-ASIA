@@ -1,4 +1,5 @@
 import { StoryEditor } from "@/components/newsroom/StoryEditor";
+import { AutomationDecisionPanel } from "@/components/newsroom/AutomationDecisionPanel";
 
 export const metadata = {
   title: "Story Editor | Super Newsroom",
@@ -19,11 +20,12 @@ export default async function StoryEditorPage({ params }: PageProps) {
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", marginBottom: 8 }}>TDR Group · Super Newsroom</div>
           <h1 style={{ fontSize: "clamp(32px,5vw,54px)", lineHeight: .98, margin: 0, letterSpacing: "-.04em" }}>Story Editor</h1>
           <p style={{ margin: "12px 0 0", color: "#666", maxWidth: 700 }}>
-            Set the story routing, generate and edit Facebook/X drafts, then return to the Newsroom queue to mark finished copy ready to post.
+            Review the Story, routing decision and social drafts. Automated promotions stay as drafts until a human marks them ready.
           </p>
         </header>
 
         <StoryEditor storyId={id} />
+        <AutomationDecisionPanel storyId={id} />
       </div>
     </main>
   );
