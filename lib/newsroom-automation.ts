@@ -9,11 +9,13 @@ import {
   saveDistributionItem,
   type DistributionChannel,
 } from "./newsroom-store";
+import { resolveStoryDestination } from "./newsroom-destination";
 import { generateSocialDraft, scoreCandidatesForAutomation } from "./openai-newsroom";
 
 export type NewsroomAutomationResult = {
   scored: number;
   promoted: number;
+  destinationsResolved: number;
   promotedCandidateIds: string[];
   skippedExisting: string[];
   errors: Array<{ candidateId: string; stage: string; error: string }>;
@@ -28,6 +30,7 @@ export async function autoPromoteDiscoveredCandidates(candidates: Candidate[]): 
   const result: NewsroomAutomationResult = {
     scored: 0,
     promoted: 0,
+    destinationsResolved: 0,
     promotedCandidateIds: [],
     skippedExisting: [],
     errors: [],
@@ -87,6 +90,18 @@ export async function autoPromoteDiscoveredCandidates(candidates: Candidate[]): 
         vertical: decision.vertical,
         destinationType: decision.destinationType,
       });
+
+      try {
+        const resolution = await resolveStoryDestination(story);
+        story = resolution.story;
+        if (resolution.resolved) result.destinationsResolved += 1;
+      } catch (error: any) {
+        result.errors.push({
+          candidateId: decision.candidateId,
+          stage: "resolve-destination",
+          error: error?.message || "Destination resolution failed",
+        });
+      }
 
       const source = await getStorySourceContext(story.candidateId);
       const channels: DistributionChannel[] = ["facebook", "x"];
