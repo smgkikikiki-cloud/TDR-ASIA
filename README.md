@@ -62,7 +62,7 @@ The write endpoint is protected by the existing `ADMIN_TOKEN` mechanism and the 
 
 ## Production deployment gate
 
-This repository is intentionally **not linked to the existing `tdr` Vercel project**. Create/link a separate Vercel project named `tdr-asia` before deployment. Required production secrets:
+Keep this repository linked to its own Vercel project, `tdr-asia`; do not link it to the existing `tdr` project. Required production secrets:
 
 - `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SECRET_KEY`) from the dedicated **TDR ASIA** Supabase project
 - `OPENAI_API_KEY`
