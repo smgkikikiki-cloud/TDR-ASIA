@@ -2,6 +2,7 @@ import "server-only";
 
 import { readCms, writeCms } from "./cms-store";
 import { generateArticle } from "./openai-newsroom";
+import { resolveTdrAutoModel } from "./tdr-auto-catalog";
 import { updateNewsroomStory, type NewsroomStory } from "./newsroom-store";
 
 export type DestinationResolution = {
@@ -10,6 +11,8 @@ export type DestinationResolution = {
   createdArticle: boolean;
   articleId?: string;
   articleSlug?: string;
+  autoCanonicalId?: string;
+  autoModelSlug?: string;
 };
 
 function uniqueSlug(base: string, existing: string[]) {
@@ -20,21 +23,29 @@ function uniqueSlug(base: string, existing: string[]) {
   return `${root}-${i}`;
 }
 
-function storyUrl(slug: string) {
+function tdrAsiaStoryUrl(slug: string) {
   const path = `/story/${slug}`;
   const base = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
   return base ? `${base}${path}` : path;
 }
 
-export async function resolveStoryDestination(story: NewsroomStory): Promise<DestinationResolution> {
-  if (story.destinationUrl) {
-    return { story, resolved: true, createdArticle: false };
-  }
+function tdrAutoModelUrl(slug: string) {
+  const path = `/models/${slug}`;
+  const base = (process.env.TDR_AUTO_SITE_URL || "").replace(/\/$/, "");
+  return base ? `${base}${path}` : path;
+}
 
-  if (story.destinationType !== "tdr_asia") {
-    return { story, resolved: false, createdArticle: false };
-  }
+async function saveDestination(story: NewsroomStory, destinationUrl: string) {
+  return updateNewsroomStory(story.id, {
+    headline: story.headline,
+    summary: story.summary,
+    vertical: story.vertical,
+    destinationType: story.destinationType,
+    destinationUrl,
+  });
+}
 
+async function resolveTdrAsia(story: NewsroomStory): Promise<DestinationResolution> {
   const state = await readCms();
   let article = state.articles.find((item) => item.candidateId === story.candidateId);
   let createdArticle = false;
@@ -59,15 +70,7 @@ export async function resolveStoryDestination(story: NewsroomStory): Promise<Des
     createdArticle = true;
   }
 
-  const destinationUrl = storyUrl(article.slug);
-  const updatedStory = await updateNewsroomStory(story.id, {
-    headline: story.headline,
-    summary: story.summary,
-    vertical: story.vertical,
-    destinationType: story.destinationType,
-    destinationUrl,
-  });
-
+  const updatedStory = await saveDestination(story, tdrAsiaStoryUrl(article.slug));
   return {
     story: updatedStory,
     resolved: true,
@@ -75,4 +78,29 @@ export async function resolveStoryDestination(story: NewsroomStory): Promise<Des
     articleId: article.id,
     articleSlug: article.slug,
   };
+}
+
+async function resolveTdrAuto(story: NewsroomStory): Promise<DestinationResolution> {
+  const match = await resolveTdrAutoModel(story.headline, story.summary);
+  if (!match) return { story, resolved: false, createdArticle: false };
+
+  const updatedStory = await saveDestination(story, tdrAutoModelUrl(match.model.slug));
+  return {
+    story: updatedStory,
+    resolved: true,
+    createdArticle: false,
+    autoCanonicalId: match.model.canonicalId,
+    autoModelSlug: match.model.slug,
+  };
+}
+
+export async function resolveStoryDestination(story: NewsroomStory): Promise<DestinationResolution> {
+  if (story.destinationUrl) {
+    return { story, resolved: true, createdArticle: false };
+  }
+
+  if (story.destinationType === "tdr_asia") return resolveTdrAsia(story);
+  if (story.destinationType === "tdr_auto") return resolveTdrAuto(story);
+
+  return { story, resolved: false, createdArticle: false };
 }
