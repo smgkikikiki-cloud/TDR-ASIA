@@ -1,0 +1,2 @@
+import Link from "next/link";import { stories } from "@/content/stories";
+export default function Features(){const rows=stories.filter(s=>s.kind==="Analysis");return <div className="shell page"><div className="eyebrow">Analysis</div><h1>Analysis</h1><div className="simpleGrid">{rows.map(s=><Link className="simpleCard" href={`/story/${s.slug}`} key={s.slug}><div className="tag">{s.country}</div><h3>{s.title}</h3><p>{s.dek}</p></Link>)}</div></div>}

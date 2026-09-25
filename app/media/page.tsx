@@ -1,0 +1,1 @@
+export default function Media(){return <div className="shell page"><div className="eyebrow">Media</div><h1>Media Resources</h1><div className="prose"><p>Press-ready charts, source notes, images and background material for selected TDR Asia stories.</p></div></div>}

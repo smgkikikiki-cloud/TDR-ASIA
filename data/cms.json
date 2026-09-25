@@ -1,0 +1,339 @@
+{
+  "articles": [],
+  "tags": [
+    {
+      "id": "tag-robotics",
+      "name": "Robotics",
+      "slug": "robotics",
+      "type": "technology",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-semiconductor",
+      "name": "Semiconductor",
+      "slug": "semiconductor",
+      "type": "technology",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-ai",
+      "name": "AI",
+      "slug": "ai",
+      "type": "technology",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-data-center",
+      "name": "Data Center",
+      "slug": "data-center",
+      "type": "technology",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-pcb",
+      "name": "PCB",
+      "slug": "pcb",
+      "type": "technology",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-battery",
+      "name": "Battery",
+      "slug": "battery",
+      "type": "technology",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-electronics",
+      "name": "Electronics",
+      "slug": "electronics",
+      "type": "industry",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-automotive",
+      "name": "Automotive",
+      "slug": "automotive",
+      "type": "industry",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-machinery",
+      "name": "Machinery",
+      "slug": "machinery",
+      "type": "industry",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-new-plant",
+      "name": "New Plant",
+      "slug": "new-plant",
+      "type": "action",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-expansion",
+      "name": "Expansion",
+      "slug": "expansion",
+      "type": "action",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-investment",
+      "name": "Investment",
+      "slug": "investment",
+      "type": "action",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-japan",
+      "name": "Japan",
+      "slug": "japan",
+      "type": "country",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-taiwan",
+      "name": "Taiwan",
+      "slug": "taiwan",
+      "type": "country",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-china",
+      "name": "China",
+      "slug": "china",
+      "type": "country",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-singapore",
+      "name": "Singapore",
+      "slug": "singapore",
+      "type": "country",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-chonburi",
+      "name": "Chonburi",
+      "slug": "chonburi",
+      "type": "location",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-rayong",
+      "name": "Rayong",
+      "slug": "rayong",
+      "type": "location",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    },
+    {
+      "id": "tag-ayutthaya",
+      "name": "Ayutthaya",
+      "slug": "ayutthaya",
+      "type": "location",
+      "active": true,
+      "createdAt": "2026-09-25T00:00:00+07:00"
+    }
+  ],
+  "sources": [
+    {
+      "id": "src-boi",
+      "name": "Thailand BOI",
+      "url": "https://www.boi.go.th/",
+      "enabled": true,
+      "priority": 10,
+      "notes": "Investment and promoted-project announcements"
+    },
+    {
+      "id": "src-set",
+      "name": "SET",
+      "url": "https://www.set.or.th/",
+      "enabled": true,
+      "priority": 10,
+      "notes": "Listed-company disclosures"
+    },
+    {
+      "id": "src-prachachat",
+      "name": "Prachachat",
+      "url": "https://www.prachachat.net/",
+      "enabled": true,
+      "priority": 8
+    },
+    {
+      "id": "src-bangkokbiz",
+      "name": "Bangkok Biz News",
+      "url": "https://www.bangkokbiznews.com/",
+      "enabled": true,
+      "priority": 8
+    },
+    {
+      "id": "src-thansettakij",
+      "name": "Thansettakij",
+      "url": "https://www.thansettakij.com/",
+      "enabled": true,
+      "priority": 8
+    }
+  ],
+  "candidates": [
+    {
+      "id": "seed-1",
+      "title": "Infineon to open new Thailand semiconductor plant on Oct. 1",
+      "summary": "German chipmaker Infineon is set to open a new Thai plant, adding a concrete semiconductor manufacturing expansion to the pipeline.",
+      "sourceName": "Bangkok Biz News",
+      "sourceUrl": "https://www.bangkokbiznews.com/economics/1253444",
+      "publishedAt": "2026-09-25T06:53:00+07:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Semiconductor",
+        "Electronics",
+        "New Plant",
+        "Investment"
+      ]
+    },
+    {
+      "id": "seed-2",
+      "title": "PTT plans $5 billion I-SPARK low-carbon industrial hub in Rayong",
+      "summary": "PTT's I-SPARK plan would create a large new industrial platform in Rayong centered on lower-carbon production and related investment.",
+      "sourceName": "Thansettakij",
+      "sourceUrl": "https://www.thansettakij.com/economy/energy/669768",
+      "publishedAt": "2026-09-25T04:37:00+07:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Investment",
+        "Rayong",
+        "New Plant"
+      ]
+    },
+    {
+      "id": "seed-3",
+      "title": "Thailand weighs 50% local-content rule for data centers",
+      "summary": "A proposed local-content threshold and quality screen could materially change how the next wave of Thai data-center investment is structured.",
+      "sourceName": "Thansettakij",
+      "sourceUrl": "https://www.thansettakij.com/economy/669769",
+      "publishedAt": "2026-09-25T03:59:00+07:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Data Center",
+        "Investment"
+      ]
+    },
+    {
+      "id": "seed-4",
+      "title": "Tokyo Tatemono joins Chonburi logistics and rental-factory project",
+      "summary": "The Japanese developer is entering a Chonburi project combining logistics space and rental factories near Laem Chabang, its first overseas rental-factory development.",
+      "sourceName": "Tokyo Tatemono",
+      "sourceUrl": "https://tatemono.com/english/news/20260925.html",
+      "publishedAt": "2026-09-25T00:00:00+09:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Japan",
+        "Chonburi",
+        "Investment",
+        "New Plant"
+      ]
+    },
+    {
+      "id": "seed-5",
+      "title": "IEAT offers two years free rent at Smart Park to accelerate high-tech investment",
+      "summary": "Smart Park is using a two-year rent and maintenance-fee waiver to push faster tenant decisions at the EEC high-tech estate.",
+      "sourceName": "Prachachat",
+      "sourceUrl": "https://www.prachachat.net/economic/news-2071508",
+      "publishedAt": "2026-09-25T11:54:00+07:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Investment",
+        "Rayong",
+        "Electronics"
+      ]
+    },
+    {
+      "id": "seed-6",
+      "title": "Thailand approves first national semiconductor strategy targeting 2.5 trillion baht",
+      "summary": "The new national roadmap targets a full semiconductor and advanced-electronics ecosystem and 2.5 trillion baht of investment over 25 years.",
+      "sourceName": "Thailand BOI",
+      "sourceUrl": "https://www.boi.go.th/index.php?_module=news&from_page=press_releases2&page=press_releases_detail&topic_id=139424",
+      "publishedAt": "2026-09-24T00:00:00+07:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Semiconductor",
+        "Electronics",
+        "Investment"
+      ]
+    },
+    {
+      "id": "seed-7",
+      "title": "IEAT says industrial-estate sales and leases reach 6,000 rai in nine months",
+      "summary": "The land take-up figure gives a fresh read on factory and data-center demand while Map Ta Phut Phase 3 continues to advance.",
+      "sourceName": "Bangkok Biz News",
+      "sourceUrl": "https://www.bangkokbiznews.com/economics/1253441",
+      "publishedAt": "2026-09-25T06:27:00+07:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Investment",
+        "Data Center",
+        "Electronics"
+      ]
+    },
+    {
+      "id": "seed-8",
+      "title": "Thai regulator prepares safety framework as Europe pushes repeatable SMR model",
+      "summary": "Thailand's nuclear regulator is studying European SMR standardization as the country prepares rules for possible small-reactor deployment.",
+      "sourceName": "Thansettakij",
+      "sourceUrl": "https://www.thansettakij.com/economy/energy/669781",
+      "publishedAt": "2026-09-25T04:39:00+07:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Investment",
+        "Technology"
+      ]
+    },
+    {
+      "id": "seed-9",
+      "title": "Thailand's August exports jump 24.3%",
+      "summary": "The sharp export increase gives a current demand-side signal for Thailand's manufacturing and industrial trade base.",
+      "sourceName": "Thansettakij",
+      "sourceUrl": "https://www.thansettakij.com/economy/669776",
+      "publishedAt": "2026-09-25T04:25:00+07:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "Electronics",
+        "Automotive"
+      ]
+    },
+    {
+      "id": "seed-10",
+      "title": "Thailand power-demand growth accelerates on AI and electronics buildout",
+      "summary": "AI infrastructure and electronics production are pushing Thailand toward its fastest electricity-demand growth in years.",
+      "sourceName": "The Malaysian Reserve",
+      "sourceUrl": "https://themalaysianreserve.com/2026/09/24/thailand-power-demand-to-hit-9-year-high-on-ai/",
+      "publishedAt": "2026-09-24T00:00:00+08:00",
+      "discoveredAt": "2026-09-25T10:49:41.701057+00:00",
+      "suggestedTags": [
+        "AI",
+        "Data Center",
+        "Electronics",
+        "Investment"
+      ]
+    }
+  ],
+  "lastDiscoveryAt": "2026-09-25T10:49:41.701057+00:00"
+}

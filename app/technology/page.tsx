@@ -1,0 +1,2 @@
+import Link from "next/link";import {stories} from "@/content/stories";
+export default function Technology(){const rows=stories.filter(s=>s.desk==="Technology"||s.desk==="Manufacturing");return <div className="shell page"><div className="eyebrow">Technology</div><h1>Technology & Manufacturing</h1><div className="list">{rows.map(s=><Link href={`/story/${s.slug}`} className="row" key={s.slug}><div className="meta">{s.country}<br/>{s.readTime}</div><div><h2>{s.title}</h2><p>{s.dek}</p></div></Link>)}</div></div>}

@@ -1,0 +1,1 @@
+export function Footer(){return <footer className="footer"><div className="shell footerGrid"><div><b className="footerBrand">TDR ASIA</b><p>Technology, manufacturing and investment news across Asia.</p></div><div><b>Based in Bangkok</b><p>Thailand-led coverage with selected reporting from major Asian technology and investment markets.</p></div></div></footer>}

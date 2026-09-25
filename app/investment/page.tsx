@@ -1,0 +1,2 @@
+import Link from "next/link";import {stories} from "@/content/stories";
+export default function Investment(){const rows=stories.filter(s=>s.desk==="Investment");return <div className="shell page"><div className="eyebrow">Investment</div><h1>Investment & Deals</h1><div className="list">{rows.map(s=><Link href={`/story/${s.slug}`} className="row" key={s.slug}><div className="meta">{s.country}<br/>{s.readTime}</div><div><h2>{s.title}</h2><p>{s.dek}</p></div></Link>)}</div></div>}

@@ -1,0 +1,3 @@
+import { stories } from "@/content/stories";import { site } from "@/content/site";
+const esc=(v:string)=>v.replace(/[<>&'\"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;","'":"&apos;","\"":"&quot;"}[c]||c));
+export function GET(){const items=stories.map(s=>`<item><title>${esc(s.title)}</title><link>${site.url}/story/${s.slug}</link><guid>${site.url}/story/${s.slug}</guid><pubDate>${new Date(s.publishedAt).toUTCString()}</pubDate><description>${esc(s.dek)}</description></item>`).join("");const xml=`<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>TDR Asia</title><link>${site.url}</link><description>${esc(site.description)}</description>${items}</channel></rss>`;return new Response(xml,{headers:{"Content-Type":"application/rss+xml; charset=utf-8"}})}

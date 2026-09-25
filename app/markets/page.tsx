@@ -1,0 +1,2 @@
+const markets=["Thailand","China","Japan","Taiwan","Singapore","Other ASEAN"];
+export default function Markets(){return <div className="shell page"><div className="eyebrow">Markets</div><h1>Markets</h1><div className="simpleGrid">{markets.map(m=><div className="simpleCard" key={m}><div className="tag">Market</div><h3>{m}</h3><p>Technology, manufacturing and investment coverage.</p></div>)}</div></div>}

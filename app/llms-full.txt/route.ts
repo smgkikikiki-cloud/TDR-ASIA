@@ -1,0 +1,2 @@
+import { stories } from "@/content/stories";import { openFacts } from "@/content/facts";
+export function GET(){const body=["# TDR Asia corpus snapshot","",...stories.flatMap(s=>[`## ${s.title}`,s.dek,`Country: ${s.country}; Desk: ${s.desk}; Type: ${s.kind}`,""]),"# Open facts",...openFacts.flatMap(f=>[`## ${f.id}`,f.claim,`Country: ${f.country}; Sector: ${f.sector}; Capability: ${f.capability.join(", ")}`,""])].join("\n");return new Response(body,{headers:{"Content-Type":"text/plain; charset=utf-8"}})}
