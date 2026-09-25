@@ -71,14 +71,14 @@ export async function getNewsroomHealth(): Promise<NewsroomHealth> {
 
   const queued = jobs.filter((job) => job.status === "queued").length;
   const running = jobs.filter((job) => job.status === "running").length;
-  const failed = jobs.filter((job) => job.status === "failed").length;
+  const failed = jobs.filter((job) => job.status === "failed" && inLast24h(job.completed_at || job.created_at)).length;
   const completed24h = jobs.filter((job) => job.status === "completed" && inLast24h(job.completed_at)).length;
   const promoted24h = stories.filter((story) => inLast24h(story.auto_promoted_at)).length;
   const generatedDrafts24h = distribution.filter((item) => inLast24h(item.generated_at)).length;
 
   const attention: HealthAttention[] = [];
 
-  for (const job of jobs.filter((row) => row.status === "failed").slice(0, 5)) {
+  for (const job of jobs.filter((row) => row.status === "failed" && inLast24h(row.completed_at || row.created_at)).slice(0, 5)) {
     attention.push({
       kind: "failed",
       title: "Newsroom job failed",
@@ -100,7 +100,7 @@ export async function getNewsroomHealth(): Promise<NewsroomHealth> {
     });
   }
 
-  for (const job of jobs.filter((row) => row.status === "completed" && Array.isArray(row.result?.errors) && row.result.errors.length).slice(0, 5)) {
+  for (const job of jobs.filter((row) => row.status === "completed" && inLast24h(row.completed_at) && Array.isArray(row.result?.errors) && row.result.errors.length).slice(0, 5)) {
     const first = row.result.errors[0];
     attention.push({
       kind: "partial",
