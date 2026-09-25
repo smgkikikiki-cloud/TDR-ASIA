@@ -1,4 +1,6 @@
 import { readCms } from "@/lib/cms-store";
+import { listNewsroomStories } from "@/lib/newsroom-store";
+import { MakeStoryButton } from "@/components/newsroom/MakeStoryButton";
 
 export const metadata = {
   title: "Super Newsroom | TDR",
@@ -24,15 +26,17 @@ function timeLabel(value?: string) {
 }
 
 export default async function NewsroomPage() {
-  const state = await readCms();
+  const [state, stories] = await Promise.all([readCms(), listNewsroomStories()]);
+  const storyCandidateIds = new Set(stories.map((story) => story.candidateId));
   const radar = state.candidates
     .filter((candidate) => !candidate.generated && !candidate.ignored)
     .sort((a, b) => b.discoveredAt.localeCompare(a.discoveredAt));
   const visibleRadar = radar.slice(0, 8);
+  const recentStories = stories.slice(0, 5);
 
   const stats = [
     { label: "New radar", value: String(radar.length), note: "Unprocessed candidates already in the newsroom" },
-    { label: "Ready", value: "—", note: "FB / X packages ready" },
+    { label: "Stories", value: String(stories.length), note: "Candidates promoted into newsroom stories" },
     { label: "Needs you", value: "—", note: "Only decisions that need a human" },
     { label: "Winners", value: "—", note: "Posts outperforming baseline" },
   ];
@@ -49,8 +53,8 @@ export default async function NewsroomPage() {
             </p>
           </div>
           <div style={{ textAlign: "right", fontSize: 12, lineHeight: 1.5, color: "#555" }}>
-            <b style={{ display: "block", color: "#111" }}>Chunk 2</b>
-            Radar is live · read-only
+            <b style={{ display: "block", color: "#111" }}>Chunk 3</b>
+            Radar → Story write path live
           </div>
         </header>
 
@@ -64,7 +68,7 @@ export default async function NewsroomPage() {
           ))}
         </section>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(260px,1fr)", gap: 18, marginTop: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(280px,1fr)", gap: 18, marginTop: 24 }}>
           <section style={{ background: "#fff", borderTop: "5px solid #111" }}>
             <div style={{ padding: "16px 18px", borderBottom: "1px solid #ddd", display: "flex", justifyContent: "space-between", gap: 20, alignItems: "end" }}>
               <div>
@@ -74,23 +78,29 @@ export default async function NewsroomPage() {
               <div style={{ fontSize: 12, color: "#666" }}>{radar.length} waiting</div>
             </div>
 
-            {visibleRadar.length ? visibleRadar.map((candidate, index) => (
-              <article key={candidate.id} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, padding: "18px", borderBottom: "1px solid #e5e1da" }}>
-                <div style={{ fontSize: 12, fontWeight: 800, color: "#777", paddingTop: 3 }}>{String(index + 1).padStart(2, "0")}</div>
-                <div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 7 }}>
-                    <b style={{ fontSize: 12 }}>{candidate.sourceName}</b>
-                    <span style={{ fontSize: 11, color: "#777" }}>{timeLabel(candidate.publishedAt || candidate.discoveredAt)}</span>
-                    {candidate.suggestedTags.slice(0, 3).map((tag) => (
-                      <span key={tag} style={{ fontSize: 10, border: "1px solid #d7d2ca", padding: "2px 6px", textTransform: "uppercase", letterSpacing: ".04em" }}>{tag}</span>
-                    ))}
+            {visibleRadar.length ? visibleRadar.map((candidate, index) => {
+              const hasStory = storyCandidateIds.has(candidate.id);
+              return (
+                <article key={candidate.id} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, padding: "18px", borderBottom: "1px solid #e5e1da" }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#777", paddingTop: 3 }}>{String(index + 1).padStart(2, "0")}</div>
+                  <div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 7 }}>
+                      <b style={{ fontSize: 12 }}>{candidate.sourceName}</b>
+                      <span style={{ fontSize: 11, color: "#777" }}>{timeLabel(candidate.publishedAt || candidate.discoveredAt)}</span>
+                      {candidate.suggestedTags.slice(0, 3).map((tag) => (
+                        <span key={tag} style={{ fontSize: 10, border: "1px solid #d7d2ca", padding: "2px 6px", textTransform: "uppercase", letterSpacing: ".04em" }}>{tag}</span>
+                      ))}
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: 19, lineHeight: 1.25 }}>{candidate.title}</h3>
+                    {candidate.summary ? <p style={{ margin: "7px 0 0", color: "#555", lineHeight: 1.45, fontSize: 14 }}>{candidate.summary}</p> : null}
+                    <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                      {candidate.sourceUrl ? <a href={candidate.sourceUrl} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: 9, fontSize: 12, fontWeight: 800, color: "#111" }}>Open source ↗</a> : null}
+                      <MakeStoryButton candidateId={candidate.id} disabled={hasStory} />
+                    </div>
                   </div>
-                  <h3 style={{ margin: 0, fontSize: 19, lineHeight: 1.25 }}>{candidate.title}</h3>
-                  {candidate.summary ? <p style={{ margin: "7px 0 0", color: "#555", lineHeight: 1.45, fontSize: 14 }}>{candidate.summary}</p> : null}
-                  {candidate.sourceUrl ? <a href={candidate.sourceUrl} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: 9, fontSize: 12, fontWeight: 800, color: "#111" }}>Open source ↗</a> : null}
-                </div>
-              </article>
-            )) : (
+                </article>
+              );
+            }) : (
               <div style={{ padding: 28, color: "#666" }}>
                 No unprocessed candidates. Existing discovery can populate this without any newsroom schema change.
               </div>
@@ -100,18 +110,30 @@ export default async function NewsroomPage() {
           <aside style={{ display: "grid", gap: 18, alignContent: "start" }}>
             <section style={{ background: "#111", color: "#fff", padding: 20 }}>
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", opacity: .7 }}>Human attention</div>
-              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>Exception only</h2>
+              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>One decision</h2>
               <p style={{ margin: 0, lineHeight: 1.55, color: "#d8d8d8", fontSize: 14 }}>
-                Nothing in this chunk writes back to the CMS. Radar only reads the candidate pool that already exists.
+                Promote a Radar candidate into a Story. This chunk does not generate Facebook, X, articles or publish anything.
               </p>
+            </section>
+
+            <section style={{ background: "#fff", border: "1px solid #d8d4cc", padding: 18 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Recent stories</div>
+              <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
+                {recentStories.length ? recentStories.map((story) => (
+                  <div key={story.id} style={{ padding: "10px 0", borderTop: "1px solid #eee" }}>
+                    <b style={{ display: "block", fontSize: 13, lineHeight: 1.3 }}>{story.headline}</b>
+                    <div style={{ marginTop: 4, fontSize: 11, color: "#777", textTransform: "uppercase" }}>{story.vertical} · {story.status}</div>
+                  </div>
+                )) : <div style={{ fontSize: 13, color: "#777" }}>No stories yet.</div>}
+              </div>
             </section>
 
             <section style={{ background: "#fff", border: "1px solid #d8d4cc", padding: 18 }}>
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Desks</div>
               <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
                 {[
-                  ["Radar", "Live now", true],
-                  ["Stories", "Next chunk", false],
+                  ["Radar", "Live", true],
+                  ["Stories", "Write path live", true],
                   ["Queue", "Later", false],
                   ["Winners", "Later", false],
                   ["Sources", "Existing registry", false],
