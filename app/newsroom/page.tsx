@@ -1,6 +1,7 @@
 import { readCms } from "@/lib/cms-store";
 import { listNewsroomStories } from "@/lib/newsroom-store";
 import { MakeStoryButton } from "@/components/newsroom/MakeStoryButton";
+import { NewsroomQueue } from "@/components/newsroom/NewsroomQueue";
 
 export const metadata = {
   title: "Super Newsroom | TDR",
@@ -37,7 +38,7 @@ export default async function NewsroomPage() {
   const stats = [
     { label: "New radar", value: String(radar.length), note: "Unprocessed candidates already in the newsroom" },
     { label: "Stories", value: String(stories.length), note: "Candidates promoted into newsroom stories" },
-    { label: "Needs you", value: "—", note: "Only decisions that need a human" },
+    { label: "Queue", value: "Live", note: "Draft → ready workflow for Facebook and X" },
     { label: "Winners", value: "—", note: "Posts outperforming baseline" },
   ];
 
@@ -53,8 +54,8 @@ export default async function NewsroomPage() {
             </p>
           </div>
           <div style={{ textAlign: "right", fontSize: 12, lineHeight: 1.5, color: "#555" }}>
-            <b style={{ display: "block", color: "#111" }}>Chunk 5</b>
-            Story → FB/X draft path live
+            <b style={{ display: "block", color: "#111" }}>Chunk 6</b>
+            Draft → ready queue live
           </div>
         </header>
 
@@ -110,9 +111,9 @@ export default async function NewsroomPage() {
           <aside style={{ display: "grid", gap: 18, alignContent: "start" }}>
             <section style={{ background: "#111", color: "#fff", padding: 20 }}>
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", opacity: .7 }}>Human attention</div>
-              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>Edit, then generate</h2>
+              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>Approve only what is ready</h2>
               <p style={{ margin: 0, lineHeight: 1.55, color: "#d8d8d8", fontSize: 14 }}>
-                Promote a Radar candidate, set its vertical and destination, then generate editable Facebook and X drafts inside the Story Editor. Nothing publishes yet.
+                Generate and edit Facebook/X drafts inside a Story, then promote only finished copy into the ready queue. This chunk still does not publish anything.
               </p>
             </section>
 
@@ -120,7 +121,7 @@ export default async function NewsroomPage() {
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Recent stories</div>
               <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
                 {recentStories.length ? recentStories.map((story) => (
-                  <a key={story.id} href={`/newsroom/stories/${story.id}`} style={{ display: "block", padding: "10px 0", borderTop: "1px solid #eee", color: "inherit", textDecoration: "none" }}>
+                  <a key={story.id} href={`/newsroom/story/${story.id}`} style={{ display: "block", padding: "10px 0", borderTop: "1px solid #eee", color: "inherit", textDecoration: "none" }}>
                     <b style={{ display: "block", fontSize: 13, lineHeight: 1.3 }}>{story.headline}</b>
                     <div style={{ marginTop: 4, fontSize: 11, color: "#777", textTransform: "uppercase" }}>{story.vertical} · {story.status} · Open editor →</div>
                   </a>
@@ -135,7 +136,7 @@ export default async function NewsroomPage() {
                   ["Radar", "Live", true],
                   ["Stories", "Editor live", true],
                   ["Outputs", "FB + X drafts live", true],
-                  ["Queue", "Later", false],
+                  ["Queue", "Draft + ready live", true],
                   ["Winners", "Later", false],
                 ].map(([name, description, live]) => (
                   <div key={String(name)} style={{ padding: "10px 0", borderTop: "1px solid #eee", display: "flex", justifyContent: "space-between", gap: 10 }}>
@@ -163,6 +164,8 @@ export default async function NewsroomPage() {
             </section>
           </aside>
         </div>
+
+        <NewsroomQueue />
       </div>
     </main>
   );
