@@ -11,6 +11,17 @@ Standalone English-language technology, manufacturing and investment news skelet
 
 The public site is deliberately conventional: fast news, top stories, topic pages and business-style sections.
 
+## Product surfaces
+
+This repository now contains two intentionally separate public interfaces:
+
+- **TDR ASIA** — newsroom, investment/company coverage and Tracker.
+- **TDR MEGAPROJECT** — major-project database and tracker under `app/mega`.
+
+Production can attach a dedicated Mega hostname (for example `mega.example.com`) to the same deployment. `middleware.ts` rewrites that hostname to the internal `/mega` routes while keeping clean public URLs such as `/projects`. `/mega/**` remains available as a development/fallback path on the primary host.
+
+The products share repository infrastructure and may exchange structured events, but their navigation and visual chrome remain separate.
+
 ## Locked geographic mix
 
 Thailand: 60–70% of editorial output.
@@ -60,6 +71,8 @@ This repository is intentionally **not linked to the existing `tdr` Vercel proje
 - `ADMIN_TOKEN` (long random value)
 - `CRON_SECRET` (long random value)
 - `SITE_URL`
+
+For separate product hostnames also configure `NEXT_PUBLIC_ASIA_URL`, `NEXT_PUBLIC_MEGA_URL`, `MEGA_HOST`, and `MEGA_EVENT_INGEST_SECRET`.
 
 Optional LINE push:
 
