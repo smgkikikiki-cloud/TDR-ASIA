@@ -33,6 +33,10 @@ export type Candidate = {
   selected?: boolean;
   generated?: boolean;
   ignored?: boolean;
+  originType?: "discovery" | "breakout_followup";
+  followupParentStoryId?: string;
+  followupParentDistributionItemId?: string;
+  followupAngleKey?: string;
 };
 
 export type CmsArticle = {
