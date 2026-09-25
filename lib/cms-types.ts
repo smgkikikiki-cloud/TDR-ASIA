@@ -32,6 +32,7 @@ export type Candidate = {
   suggestedTags: string[];
   selected?: boolean;
   generated?: boolean;
+  ignored?: boolean;
 };
 
 export type CmsArticle = {
