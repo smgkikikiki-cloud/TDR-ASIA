@@ -77,12 +77,17 @@ export async function generateSocialDraft(
   source: StorySourceContext,
   channel: DistributionChannel,
 ): Promise<string> {
-  const destination = story.destinationUrl ? `Destination URL: ${story.destinationUrl}` : "Destination URL: none";
+  const publicDestination = story.destinationUrl && /^https?:\/\//i.test(story.destinationUrl) ? story.destinationUrl : null;
+  const destination = publicDestination
+    ? `Destination URL: ${publicDestination}`
+    : story.destinationUrl
+      ? `Destination page is prepared internally at ${story.destinationUrl}, but the public site base URL is not configured. Do not print this relative path and do not add a link CTA.`
+      : "Destination URL: none";
   const sourceLine = source.sourceUrl ? `${source.sourceName || "Source"}: ${source.sourceUrl}` : "No source URL is available; use only the Story facts below.";
 
   const channelInstruction = channel === "facebook"
-    ? `Write a Thai-language Facebook post for the TDR Facebook page. The page covers automobiles, industry/investment and megaprojects. Lead with the strongest concrete fact or number. Make it easy to understand and share. Keep the tone confident, data-led and newsroom-like, not corporate PR and not AI-sounding. Use short paragraphs. Do not invent context, numbers or claims. If a destination URL exists, end with one natural CTA line pointing readers there. Do not add generic engagement bait. Do not add more than 2 hashtags, and prefer none.`
-    : `Write a Thai-language X post for TDR. Make it sharper and more thesis-driven than Facebook: one defensible claim that invites disagreement, followed by the strongest supporting fact. Controlled provocation is good; rage bait, insults and unsupported certainty are not. Keep it concise enough for a normal X post unless the facts truly require a short 2-post thread. Do not invent context, numbers or claims. If a destination URL exists, include it naturally. No generic engagement bait and no hashtag pile.`;
+    ? `Write a Thai-language Facebook post for the TDR Facebook page. The page covers automobiles, industry/investment and megaprojects. Lead with the strongest concrete fact or number. Make it easy to understand and share. Keep the tone confident, data-led and newsroom-like, not corporate PR and not AI-sounding. Use short paragraphs. Do not invent context, numbers or claims. If a public destination URL exists, end with one natural CTA line pointing readers there. Do not add generic engagement bait. Do not add more than 2 hashtags, and prefer none.`
+    : `Write a Thai-language X post for TDR. Make it sharper and more thesis-driven than Facebook: one defensible claim that invites disagreement, followed by the strongest supporting fact. Controlled provocation is good; rage bait, insults and unsupported certainty are not. Keep it concise enough for a normal X post unless the facts truly require a short 2-post thread. Do not invent context, numbers or claims. If a public destination URL exists, include it naturally. No generic engagement bait and no hashtag pile.`;
 
   const prompt = `You are the social desk inside TDR Super Newsroom.\n\n${channelInstruction}\n\nSTORY\nHeadline: ${story.headline}\nSummary: ${story.summary || ""}\nVertical: ${story.vertical}\n${destination}\n\nSOURCE\n${sourceLine}\nPublished at: ${source.publishedAt || "unknown"}\n\nUse the selected source as the factual basis when it is available. You may open it to understand the facts, but do not wander into unrelated research or turn this into a fact-checking exercise. Preserve exact company names, places and numbers. Return ONLY the finished social copy as plain text. No JSON, no explanation, no labels.`;
 
