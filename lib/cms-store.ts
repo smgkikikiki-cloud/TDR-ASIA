@@ -72,6 +72,7 @@ async function supabaseRead(): Promise<CmsState | null> {
       suggestedTags:Array.isArray(r.raw_metadata?.suggestedTags) ? r.raw_metadata.suggestedTags.map(String) : [],
       selected:r.status === "selected",
       generated:r.status === "generated",
+      ignored:r.status === "ignored",
     })),
     articles: articles.map((r:any) => ({
       id:r.id,
@@ -139,7 +140,7 @@ async function supabaseWrite(state:CmsState) {
     source_name:c.sourceName || null,
     source_url:c.sourceUrl,
     published_at:c.publishedAt || null,
-    status:c.generated ? "generated" : c.selected ? "selected" : "new",
+    status:c.generated ? "generated" : c.ignored ? "ignored" : c.selected ? "selected" : "new",
     raw_metadata:{ suggestedTags:c.suggestedTags || [] },
   })));
 
