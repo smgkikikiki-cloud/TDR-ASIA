@@ -38,7 +38,7 @@ export async function discoverCandidates(sources: CmsSource[], priorUrls: string
   const text = await response(prompt);
   const rows = JSON.parse(cleanJson(text)) as any[];
   const now = new Date().toISOString();
-  return rows.slice(0,10).map((r,i)=>({
+  return rows.slice(0,10).map((r)=>({
     id: crypto.randomUUID(),
     title: String(r.title || "Untitled"),
     summary: String(r.summary || ""),
@@ -90,4 +90,55 @@ export async function generateSocialDraft(
   const copy = text.trim();
   if (!copy) throw new Error("EMPTY_SOCIAL_DRAFT");
   return copy;
+}
+
+export type CandidateAutomationScore = {
+  candidateId: string;
+  growthScore: number;
+  routeScore: number;
+  vertical: "auto" | "industry" | "mega" | "cross_vertical";
+  destinationType: "tdr_auto" | "tdr_asia" | "tdr_mega" | "none";
+  reason: string;
+};
+
+function clampScore(value: unknown) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(100, Math.round(number)));
+}
+
+export async function scoreCandidatesForAutomation(candidates: Candidate[]): Promise<CandidateAutomationScore[]> {
+  if (!candidates.length) return [];
+
+  const compact = candidates.map((candidate) => ({
+    id: candidate.id,
+    title: candidate.title,
+    summary: candidate.summary,
+    sourceName: candidate.sourceName,
+    publishedAt: candidate.publishedAt || null,
+    tags: candidate.suggestedTags,
+  }));
+
+  const prompt = `You are the triage desk for TDR Super Newsroom. TDR uses Facebook and X to grow a shared audience and route it into three products: TDR Auto (cars/market/data), TDR Asia (industry/investment), and TDR Mega (infrastructure/megaprojects).\n\nScore each candidate independently.\n\nGrowth score 0-100 = likelihood that a timely Thai-language Facebook/X post can win non-follower attention, shares, discussion or follower growth. Reward concrete numbers, major brands, large investments, surprising changes, strong Thailand relevance, market conflict and freshness. Penalize routine PR, vague policy statements, duplicates and niche items with no hook.\n\nRoute score 0-100 = how naturally interest can be routed into one of TDR Auto / TDR Asia / TDR Mega. This is product fit, not whether a destination URL already exists.\n\nChoose vertical: auto, industry, mega, or cross_vertical. Choose destinationType: tdr_auto, tdr_asia, tdr_mega, or none. Auto includes vehicle launches/prices/market/production. Industry includes manufacturing, investment, electronics, batteries, data centers, corporate expansion. Mega includes rail, road, airports, ports, utilities and major infrastructure.\n\nReturn ONLY a JSON array with exactly one object per candidate: candidateId, growthScore, routeScore, vertical, destinationType, reason. Reason must be one short sentence explaining the score; do not repeat the headline. Do not browse the web; score only what is supplied.\n\nCANDIDATES\n${JSON.stringify(compact)}`;
+
+  const text = await response(prompt, process.env.OPENAI_NEWS_MODEL || "gpt-5.6-luna", false);
+  const rows = JSON.parse(cleanJson(text)) as any[];
+  const allowedIds = new Set(candidates.map((candidate) => candidate.id));
+  const verticals = new Set(["auto", "industry", "mega", "cross_vertical"]);
+  const destinations = new Set(["tdr_auto", "tdr_asia", "tdr_mega", "none"]);
+
+  return rows.flatMap((row) => {
+    const candidateId = String(row.candidateId || "");
+    if (!allowedIds.has(candidateId)) return [];
+    const vertical = verticals.has(row.vertical) ? row.vertical : "industry";
+    const destinationType = destinations.has(row.destinationType) ? row.destinationType : "tdr_asia";
+    return [{
+      candidateId,
+      growthScore: clampScore(row.growthScore),
+      routeScore: clampScore(row.routeScore),
+      vertical,
+      destinationType,
+      reason: String(row.reason || "Automated newsroom triage"),
+    } as CandidateAutomationScore];
+  });
 }
