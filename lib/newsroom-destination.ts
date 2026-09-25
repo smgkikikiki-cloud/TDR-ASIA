@@ -3,6 +3,7 @@ import "server-only";
 import { readCms, writeCms } from "./cms-store";
 import { generateArticle } from "./openai-newsroom";
 import { resolveTdrAutoModel } from "./tdr-auto-catalog";
+import { resolveTdrMegaProject } from "./tdr-mega-catalog";
 import { updateNewsroomStory, type NewsroomStory } from "./newsroom-store";
 
 export type DestinationResolution = {
@@ -13,6 +14,7 @@ export type DestinationResolution = {
   articleSlug?: string;
   autoCanonicalId?: string;
   autoModelSlug?: string;
+  megaProjectSlug?: string;
 };
 
 function uniqueSlug(base: string, existing: string[]) {
@@ -32,6 +34,12 @@ function tdrAsiaStoryUrl(slug: string) {
 function tdrAutoModelUrl(slug: string) {
   const path = `/models/${slug}`;
   const base = (process.env.TDR_AUTO_SITE_URL || "").replace(/\/$/, "");
+  return base ? `${base}${path}` : path;
+}
+
+function tdrMegaProjectUrl(slug: string) {
+  const path = `/mega/projects/${slug}`;
+  const base = (process.env.TDR_MEGA_SITE_URL || process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
   return base ? `${base}${path}` : path;
 }
 
@@ -94,6 +102,19 @@ async function resolveTdrAuto(story: NewsroomStory): Promise<DestinationResoluti
   };
 }
 
+async function resolveTdrMega(story: NewsroomStory): Promise<DestinationResolution> {
+  const match = resolveTdrMegaProject(story.headline, story.summary);
+  if (!match) return { story, resolved: false, createdArticle: false };
+
+  const updatedStory = await saveDestination(story, tdrMegaProjectUrl(match.project.slug));
+  return {
+    story: updatedStory,
+    resolved: true,
+    createdArticle: false,
+    megaProjectSlug: match.project.slug,
+  };
+}
+
 export async function resolveStoryDestination(story: NewsroomStory): Promise<DestinationResolution> {
   if (story.destinationUrl) {
     return { story, resolved: true, createdArticle: false };
@@ -101,6 +122,7 @@ export async function resolveStoryDestination(story: NewsroomStory): Promise<Des
 
   if (story.destinationType === "tdr_asia") return resolveTdrAsia(story);
   if (story.destinationType === "tdr_auto") return resolveTdrAuto(story);
+  if (story.destinationType === "tdr_mega") return resolveTdrMega(story);
 
   return { story, resolved: false, createdArticle: false };
 }
