@@ -3,13 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function MakeStoryButton({ candidateId, disabled = false }: { candidateId: string; disabled?: boolean }) {
+export function MakeStoryButton({ candidateId, storyId }: { candidateId: string; storyId?: string }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
 
-  async function makeStory() {
-    if (disabled || busy) return;
+  async function handleClick() {
+    if (busy) return;
+    if (storyId) {
+      router.push(`/newsroom/story/${storyId}`);
+      return;
+    }
+
     let token = sessionStorage.getItem("tdr-admin-token") || "";
     if (!token) {
       token = window.prompt("Admin token") || "";
@@ -40,6 +45,11 @@ export function MakeStoryButton({ candidateId, disabled = false }: { candidateId
       return;
     }
 
+    if (json.story?.id) {
+      router.push(`/newsroom/story/${json.story.id}`);
+      return;
+    }
+
     setMessage("Story created");
     router.refresh();
   }
@@ -48,19 +58,19 @@ export function MakeStoryButton({ candidateId, disabled = false }: { candidateId
     <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 10 }}>
       <button
         type="button"
-        onClick={makeStory}
-        disabled={disabled || busy}
+        onClick={handleClick}
+        disabled={busy}
         style={{
           border: "1px solid #111",
-          background: disabled ? "#eee" : "#111",
-          color: disabled ? "#777" : "#fff",
+          background: storyId ? "#fff" : "#111",
+          color: "#111",
           padding: "7px 10px",
           fontSize: 11,
           fontWeight: 800,
-          cursor: disabled || busy ? "default" : "pointer",
+          cursor: busy ? "wait" : "pointer",
         }}
       >
-        {disabled ? "Story exists" : busy ? "Creating…" : "Make Story"}
+        <span style={{ color: storyId ? "#111" : "#fff" }}>{storyId ? "Open Story" : busy ? "Creating…" : "Make Story"}</span>
       </button>
       {message ? <small style={{ color: "#666" }}>{message}</small> : null}
     </span>
