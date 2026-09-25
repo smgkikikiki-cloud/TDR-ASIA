@@ -59,13 +59,16 @@ export async function listNewsroomStories(): Promise<NewsroomStory[]> {
 }
 
 export async function createStoryFromCandidate(candidateId: string): Promise<NewsroomStory> {
+  const existing = await rest<any[]>(`stories?select=*&candidate_id=eq.${encodeURIComponent(candidateId)}&limit=1`);
+  if (existing[0]) return mapStory(existing[0]);
+
   const candidates = await rest<any[]>(`candidates?select=id,headline,summary&id=eq.${encodeURIComponent(candidateId)}&limit=1`);
   const candidate = candidates[0];
   if (!candidate) throw new Error("Candidate not found");
 
-  const rows = await rest<any[]>("stories?on_conflict=candidate_id", {
+  const rows = await rest<any[]>("stories", {
     method: "POST",
-    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    headers: { Prefer: "return=representation" },
     body: JSON.stringify({
       candidate_id: candidate.id,
       headline: candidate.headline,
