@@ -38,8 +38,10 @@ export function CompanyTrackerDashboard({ companies, records }: Props) {
   async function changeFrequency(next:string){
     setFrequency(next);
     const supabase=getSupabaseBrowser();
+    const {data:{session}}=await supabase.auth.getSession();
+    if(!session)return;
     const value=next==="Daily digest"?"daily":next==="Weekly digest"?"weekly":"instant";
-    await supabase.rpc("update_my_profile",{p_display_name:null,p_alert_frequency:value});
+    await supabase.from("profiles").update({alert_frequency:value}).eq("id",session.user.id);
   }
 
   const trackedCompanies=companies.filter(c=>tracked.includes(c.slug));
