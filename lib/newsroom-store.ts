@@ -19,17 +19,24 @@ export type NewsroomStoryUpdate = Pick<
 >;
 
 export type DistributionChannel = "facebook" | "x";
+export type DistributionStatus = "draft" | "ready" | "posted";
 
 export type DistributionItem = {
   id: string;
   storyId: string;
   channel: DistributionChannel;
   copy: string;
-  status: "draft" | "ready" | "posted";
+  status: DistributionStatus;
   destinationUrl: string | null;
   generatedAt: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type QueueItem = DistributionItem & {
+  storyHeadline: string;
+  storyVertical: NewsroomStory["vertical"];
+  storyDestinationType: NewsroomStory["destinationType"];
 };
 
 export type StorySourceContext = {
@@ -136,6 +143,25 @@ export async function listDistributionItems(storyId: string): Promise<Distributi
   return rows.map(mapDistributionItem);
 }
 
+export async function listReadyQueueItems(): Promise<QueueItem[]> {
+  if (!configured()) return [];
+  const [rows, stories] = await Promise.all([
+    rest<any[]>("distribution_items?select=*&status=eq.ready&order=updated_at.desc"),
+    listNewsroomStories(),
+  ]);
+  const storyById = new Map(stories.map((story) => [story.id, story]));
+  return rows.flatMap((row) => {
+    const story = storyById.get(row.story_id);
+    if (!story) return [];
+    return [{
+      ...mapDistributionItem(row),
+      storyHeadline: story.headline,
+      storyVertical: story.vertical,
+      storyDestinationType: story.destinationType,
+    } satisfies QueueItem];
+  });
+}
+
 export async function saveDistributionItem(
   storyId: string,
   channel: DistributionChannel,
@@ -156,6 +182,23 @@ export async function saveDistributionItem(
     }),
   });
   if (!rows[0]) throw new Error("Distribution draft was not saved");
+  return mapDistributionItem(rows[0]);
+}
+
+export async function updateDistributionStatus(
+  storyId: string,
+  channel: DistributionChannel,
+  status: Extract<DistributionStatus, "draft" | "ready">,
+): Promise<DistributionItem> {
+  const rows = await rest<any[]>(
+    `distribution_items?story_id=eq.${encodeURIComponent(storyId)}&channel=eq.${encodeURIComponent(channel)}`,
+    {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ status }),
+    },
+  );
+  if (!rows[0]) throw new Error("Distribution draft not found");
   return mapDistributionItem(rows[0]);
 }
 
