@@ -13,6 +13,11 @@ export type NewsroomStory = {
   updatedAt: string;
 };
 
+export type NewsroomStoryUpdate = Pick<
+  NewsroomStory,
+  "headline" | "summary" | "vertical" | "destinationType" | "destinationUrl"
+>;
+
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 
@@ -56,6 +61,29 @@ export async function listNewsroomStories(): Promise<NewsroomStory[]> {
   if (!configured()) return [];
   const rows = await rest<any[]>("stories?select=*&order=created_at.desc");
   return rows.map(mapStory);
+}
+
+export async function getNewsroomStory(storyId: string): Promise<NewsroomStory | null> {
+  if (!configured()) return null;
+  const rows = await rest<any[]>(`stories?select=*&id=eq.${encodeURIComponent(storyId)}&limit=1`);
+  return rows[0] ? mapStory(rows[0]) : null;
+}
+
+export async function updateNewsroomStory(storyId: string, update: NewsroomStoryUpdate): Promise<NewsroomStory> {
+  const rows = await rest<any[]>(`stories?id=eq.${encodeURIComponent(storyId)}`, {
+    method: "PATCH",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      headline: update.headline,
+      summary: update.summary || null,
+      vertical: update.vertical,
+      destination_type: update.destinationType,
+      destination_url: update.destinationUrl || null,
+    }),
+  });
+
+  if (!rows[0]) throw new Error("Story not found");
+  return mapStory(rows[0]);
 }
 
 export async function createStoryFromCandidate(candidateId: string): Promise<NewsroomStory> {
