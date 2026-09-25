@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type PerformanceClass = "learning" | "dead" | "normal" | "rising" | "breakout";
 type PerformanceItem = {
@@ -38,10 +39,13 @@ function when(value?: string | null) {
 }
 
 export function NewsroomPerformancePanel() {
+  const router = useRouter();
   const [items, setItems] = useState<PerformanceItem[]>([]);
   const [token, setToken] = useState("");
   const [message, setMessage] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [followupBusyId, setFollowupBusyId] = useState<string | null>(null);
+  const [followupMessage, setFollowupMessage] = useState<Record<string, string>>({});
   const [metrics, setMetrics] = useState<Record<string, typeof emptyMetrics>>({});
 
   async function load(adminToken: string) {
@@ -91,6 +95,28 @@ export function NewsroomPerformancePanel() {
     setMetrics((current) => ({ ...current, [item.distributionItemId]: { ...emptyMetrics } }));
   }
 
+  async function generateFollowups(item: PerformanceItem) {
+    if (!token || followupBusyId) return;
+    setFollowupBusyId(item.distributionItemId);
+    setFollowupMessage((current) => ({ ...current, [item.distributionItemId]: "" }));
+    const res = await fetch("/api/newsroom/followups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-token": token },
+      body: JSON.stringify({ distributionItemId: item.distributionItemId }),
+    });
+    const json = await res.json().catch(() => ({}));
+    setFollowupBusyId(null);
+    if (!res.ok) {
+      setFollowupMessage((current) => ({ ...current, [item.distributionItemId]: json.error || "Could not generate follow-ups" }));
+      return;
+    }
+    const text = json.alreadyExists
+      ? `${json.candidateIds?.length || 0} follow-up candidates already exist in Radar.`
+      : `${json.created || 0} follow-up candidates sent to Radar.`;
+    setFollowupMessage((current) => ({ ...current, [item.distributionItemId]: text }));
+    router.refresh();
+  }
+
   const winners = useMemo(() => items.filter((item) => item.performanceClass === "breakout" || item.performanceClass === "rising"), [items]);
 
   if (!token) return null;
@@ -111,6 +137,7 @@ export function NewsroomPerformancePanel() {
       <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
         {items.length ? items.map((item) => {
           const form = metrics[item.distributionItemId] || emptyMetrics;
+          const isBreakout = item.performanceClass === "breakout";
           return (
             <article key={item.distributionItemId} style={{ border: "1px solid #ddd", padding: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -131,6 +158,24 @@ export function NewsroomPerformancePanel() {
                   <div key={String(label)} style={{ background: "#f5f3ee", padding: 8 }}><small>{label}</small><b style={{ display: "block", marginTop: 3 }}>{fmt(value as number | undefined)}</b></div>
                 ))}
               </div>
+
+              {isBreakout ? (
+                <div style={{ marginTop: 12, padding: 12, border: "1px solid #111", background: "#fafaf7", display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                  <div>
+                    <b style={{ fontSize: 13 }}>Breakout: extend the momentum</b>
+                    <div style={{ fontSize: 12, color: "#666", marginTop: 3 }}>Generate four distinct follow-up angles and send them back to Radar. Repeated clicks are idempotent.</div>
+                    {followupMessage[item.distributionItemId] ? <div style={{ fontSize: 12, marginTop: 5 }}>{followupMessage[item.distributionItemId]}</div> : null}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={followupBusyId !== null}
+                    onClick={() => void generateFollowups(item)}
+                    style={{ border: 0, background: "#111", color: "#fff", padding: "9px 12px", fontWeight: 800, cursor: followupBusyId ? "wait" : "pointer" }}
+                  >
+                    {followupBusyId === item.distributionItemId ? "Generating…" : "Generate follow-ups"}
+                  </button>
+                </div>
+              ) : null}
 
               <form onSubmit={(event) => void saveSnapshot(event, item)} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(100px,1fr))", gap: 7, marginTop: 12 }}>
                 {Object.keys(emptyMetrics).map((key) => (
