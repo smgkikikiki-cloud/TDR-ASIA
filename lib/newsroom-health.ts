@@ -57,11 +57,12 @@ export async function getNewsroomHealth(): Promise<NewsroomHealth> {
     };
   }
 
-  const [jobs, runs, stories, distribution] = await Promise.all([
+  const [jobs, runs, stories, distribution, articles] = await Promise.all([
     rest<any[]>("automation_jobs?select=id,status,candidate_id,attempts,error_message,result,created_at,started_at,completed_at&job_type=eq.newsroom&order=created_at.desc"),
     rest<any[]>("discovery_runs?select=started_at,completed_at&order=started_at.desc&limit=1"),
     rest<any[]>("stories?select=id,candidate_id,headline,destination_type,destination_url,auto_promoted_at,created_at&order=created_at.desc"),
     rest<any[]>("distribution_items?select=id,story_id,status,generated_at,created_at&order=created_at.desc"),
+    rest<any[]>("articles?select=id,source_candidate_id,status,slug,updated_at&source_candidate_id=not.is.null"),
   ]);
 
   const now = Date.now();
@@ -75,6 +76,7 @@ export async function getNewsroomHealth(): Promise<NewsroomHealth> {
   const completed24h = jobs.filter((job) => job.status === "completed" && inLast24h(job.completed_at)).length;
   const promoted24h = stories.filter((story) => inLast24h(story.auto_promoted_at)).length;
   const generatedDrafts24h = distribution.filter((item) => inLast24h(item.generated_at)).length;
+  const articleByCandidateId = new Map(articles.map((article) => [article.source_candidate_id, article]));
 
   const attention: HealthAttention[] = [];
 
@@ -120,6 +122,19 @@ export async function getNewsroomHealth(): Promise<NewsroomHealth> {
       storyId: story.id,
       candidateId: story.candidate_id,
       createdAt: story.auto_promoted_at || story.created_at,
+    });
+  }
+
+  for (const story of stories.filter((row) => row.destination_type === "tdr_asia" && row.destination_url).slice(0, 12)) {
+    const article = articleByCandidateId.get(story.candidate_id);
+    if (!article || article.status === "published") continue;
+    attention.push({
+      kind: "routing",
+      title: "TDR Asia article draft waiting publish",
+      detail: `${story.headline} → /story/${article.slug}`,
+      storyId: story.id,
+      candidateId: story.candidate_id,
+      createdAt: article.updated_at || story.auto_promoted_at || story.created_at,
     });
   }
 
