@@ -14,6 +14,8 @@ export async function POST(req: NextRequest) {
     const story = await createStoryFromCandidate(candidateId);
     return NextResponse.json({ ok: true, story });
   } catch (error: any) {
-    return NextResponse.json({ ok: false, error: error?.message || "Could not create story" }, { status: 500 });
+    const message = error?.message || "Could not create story";
+    const status = message === "Candidate not found" ? 404 : 500;
+    return NextResponse.json({ ok: false, error: message }, { status });
   }
 }
