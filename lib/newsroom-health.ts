@@ -115,10 +115,13 @@ export async function getNewsroomHealth(): Promise<NewsroomHealth> {
   }
 
   for (const story of stories.filter((row) => row.auto_promoted_at && row.destination_type && row.destination_type !== "none" && !row.destination_url).slice(0, 8)) {
+    const megaUnmatched = story.destination_type === "tdr_mega";
     attention.push({
       kind: "routing",
-      title: "Destination URL missing",
-      detail: `${story.headline} → ${story.destination_type}`,
+      title: megaUnmatched ? "TDR Mega catalog has no confident project match" : "Destination URL missing",
+      detail: megaUnmatched
+        ? `${story.headline} → add/verify the project in Mega before routing traffic.`
+        : `${story.headline} → ${story.destination_type}`,
       storyId: story.id,
       candidateId: story.candidate_id,
       createdAt: story.auto_promoted_at || story.created_at,
@@ -130,6 +133,17 @@ export async function getNewsroomHealth(): Promise<NewsroomHealth> {
       kind: "routing",
       title: "TDR Auto model matched; public base URL missing",
       detail: `${story.headline} → ${story.destination_url}. Set TDR_AUTO_SITE_URL before using the destination as a social CTA.`,
+      storyId: story.id,
+      candidateId: story.candidate_id,
+      createdAt: story.auto_promoted_at || story.created_at,
+    });
+  }
+
+  for (const story of stories.filter((row) => row.destination_type === "tdr_mega" && typeof row.destination_url === "string" && row.destination_url.startsWith("/")).slice(0, 8)) {
+    attention.push({
+      kind: "routing",
+      title: "TDR Mega project matched; public base URL missing",
+      detail: `${story.headline} → ${story.destination_url}. Set SITE_URL or TDR_MEGA_SITE_URL before using the destination as a social CTA.`,
       storyId: story.id,
       candidateId: story.candidate_id,
       createdAt: story.auto_promoted_at || story.created_at,
