@@ -66,9 +66,9 @@ export async function createStoryFromCandidate(candidateId: string): Promise<New
   const candidate = candidates[0];
   if (!candidate) throw new Error("Candidate not found");
 
-  const rows = await rest<any[]>("stories", {
+  const rows = await rest<any[]>("stories?on_conflict=candidate_id", {
     method: "POST",
-    headers: { Prefer: "return=representation" },
+    headers: { Prefer: "resolution=ignore-duplicates,return=representation" },
     body: JSON.stringify({
       candidate_id: candidate.id,
       headline: candidate.headline,
@@ -77,6 +77,8 @@ export async function createStoryFromCandidate(candidateId: string): Promise<New
     }),
   });
 
-  if (!rows[0]) throw new Error("Story was not created");
-  return mapStory(rows[0]);
+  if (rows[0]) return mapStory(rows[0]);
+  const afterConflict = await rest<any[]>(`stories?select=*&candidate_id=eq.${encodeURIComponent(candidateId)}&limit=1`);
+  if (!afterConflict[0]) throw new Error("Story was not created");
+  return mapStory(afterConflict[0]);
 }
