@@ -53,8 +53,8 @@ export default async function NewsroomPage() {
             </p>
           </div>
           <div style={{ textAlign: "right", fontSize: 12, lineHeight: 1.5, color: "#555" }}>
-            <b style={{ display: "block", color: "#111" }}>Chunk 4</b>
-            Story Editor live
+            <b style={{ display: "block", color: "#111" }}>Chunk 5</b>
+            Story → FB/X draft path live
           </div>
         </header>
 
@@ -79,7 +79,7 @@ export default async function NewsroomPage() {
             </div>
 
             {visibleRadar.length ? visibleRadar.map((candidate, index) => {
-              const story = storyByCandidateId.get(candidate.id);
+              const existingStory = storyByCandidateId.get(candidate.id);
               return (
                 <article key={candidate.id} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, padding: "18px", borderBottom: "1px solid #e5e1da" }}>
                   <div style={{ fontSize: 12, fontWeight: 800, color: "#777", paddingTop: 3 }}>{String(index + 1).padStart(2, "0")}</div>
@@ -95,7 +95,7 @@ export default async function NewsroomPage() {
                     {candidate.summary ? <p style={{ margin: "7px 0 0", color: "#555", lineHeight: 1.45, fontSize: 14 }}>{candidate.summary}</p> : null}
                     <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                       {candidate.sourceUrl ? <a href={candidate.sourceUrl} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: 9, fontSize: 12, fontWeight: 800, color: "#111" }}>Open source ↗</a> : null}
-                      <MakeStoryButton candidateId={candidate.id} storyId={story?.id} />
+                      <MakeStoryButton candidateId={candidate.id} storyId={existingStory?.id} />
                     </div>
                   </div>
                 </article>
@@ -110,9 +110,9 @@ export default async function NewsroomPage() {
           <aside style={{ display: "grid", gap: 18, alignContent: "start" }}>
             <section style={{ background: "#111", color: "#fff", padding: 20 }}>
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", opacity: .7 }}>Human attention</div>
-              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>Edit only what matters</h2>
+              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>Edit, then generate</h2>
               <p style={{ margin: 0, lineHeight: 1.55, color: "#d8d8d8", fontSize: 14 }}>
-                A Story can now be edited and routed to Auto, Asia, Mega or nowhere before social generation exists.
+                Promote a Radar candidate, set its vertical and destination, then generate editable Facebook and X drafts inside the Story Editor. Nothing publishes yet.
               </p>
             </section>
 
@@ -120,9 +120,9 @@ export default async function NewsroomPage() {
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Recent stories</div>
               <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
                 {recentStories.length ? recentStories.map((story) => (
-                  <a key={story.id} href={`/newsroom/story/${story.id}`} style={{ display: "block", padding: "10px 0", borderTop: "1px solid #eee", color: "#111", textDecoration: "none" }}>
+                  <a key={story.id} href={`/newsroom/stories/${story.id}`} style={{ display: "block", padding: "10px 0", borderTop: "1px solid #eee", color: "inherit", textDecoration: "none" }}>
                     <b style={{ display: "block", fontSize: 13, lineHeight: 1.3 }}>{story.headline}</b>
-                    <div style={{ marginTop: 4, fontSize: 11, color: "#777", textTransform: "uppercase" }}>{story.vertical} · {story.status}</div>
+                    <div style={{ marginTop: 4, fontSize: 11, color: "#777", textTransform: "uppercase" }}>{story.vertical} · {story.status} · Open editor →</div>
                   </a>
                 )) : <div style={{ fontSize: 13, color: "#777" }}>No stories yet.</div>}
               </div>
@@ -134,9 +134,9 @@ export default async function NewsroomPage() {
                 {[
                   ["Radar", "Live", true],
                   ["Stories", "Editor live", true],
+                  ["Outputs", "FB + X drafts live", true],
                   ["Queue", "Later", false],
                   ["Winners", "Later", false],
-                  ["Sources", "Existing registry", false],
                 ].map(([name, description, live]) => (
                   <div key={String(name)} style={{ padding: "10px 0", borderTop: "1px solid #eee", display: "flex", justifyContent: "space-between", gap: 10 }}>
                     <b>{String(name)}</b>
