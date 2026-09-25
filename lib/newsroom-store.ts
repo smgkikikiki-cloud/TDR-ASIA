@@ -9,6 +9,10 @@ export type NewsroomStory = {
   destinationType: "tdr_auto" | "tdr_asia" | "tdr_mega" | "none" | null;
   destinationUrl: string | null;
   status: "draft" | "ready" | "archived";
+  growthScore: number | null;
+  routeScore: number | null;
+  automationReason: string | null;
+  autoPromotedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -17,6 +21,14 @@ export type NewsroomStoryUpdate = Pick<
   NewsroomStory,
   "headline" | "summary" | "vertical" | "destinationType" | "destinationUrl"
 >;
+
+export type AutomationDecision = {
+  growthScore: number;
+  routeScore: number;
+  reason: string;
+  vertical: NewsroomStory["vertical"];
+  destinationType: NewsroomStory["destinationType"];
+};
 
 export type DistributionChannel = "facebook" | "x";
 export type DistributionStatus = "draft" | "ready" | "posted";
@@ -79,6 +91,10 @@ function mapStory(row: any): NewsroomStory {
     destinationType: row.destination_type ?? null,
     destinationUrl: row.destination_url ?? null,
     status: row.status,
+    growthScore: typeof row.growth_score === "number" ? row.growth_score : null,
+    routeScore: typeof row.route_score === "number" ? row.route_score : null,
+    automationReason: row.automation_reason ?? null,
+    autoPromotedAt: row.auto_promoted_at ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -110,6 +126,12 @@ export async function getNewsroomStory(storyId: string): Promise<NewsroomStory |
   return rows[0] ? mapStory(rows[0]) : null;
 }
 
+export async function getNewsroomStoryByCandidateId(candidateId: string): Promise<NewsroomStory | null> {
+  if (!configured()) return null;
+  const rows = await rest<any[]>(`stories?select=*&candidate_id=eq.${encodeURIComponent(candidateId)}&limit=1`);
+  return rows[0] ? mapStory(rows[0]) : null;
+}
+
 export async function getStorySourceContext(candidateId: string): Promise<StorySourceContext> {
   const rows = await rest<any[]>(`candidates?select=source_name,source_url,published_at&id=eq.${encodeURIComponent(candidateId)}&limit=1`);
   const row = rows[0] || {};
@@ -133,6 +155,23 @@ export async function updateNewsroomStory(storyId: string, update: NewsroomStory
     }),
   });
 
+  if (!rows[0]) throw new Error("Story not found");
+  return mapStory(rows[0]);
+}
+
+export async function applyAutomationDecision(storyId: string, decision: AutomationDecision): Promise<NewsroomStory> {
+  const rows = await rest<any[]>(`stories?id=eq.${encodeURIComponent(storyId)}`, {
+    method: "PATCH",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      growth_score: decision.growthScore,
+      route_score: decision.routeScore,
+      automation_reason: decision.reason,
+      auto_promoted_at: new Date().toISOString(),
+      vertical: decision.vertical,
+      destination_type: decision.destinationType,
+    }),
+  });
   if (!rows[0]) throw new Error("Story not found");
   return mapStory(rows[0]);
 }
