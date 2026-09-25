@@ -11,17 +11,6 @@ Standalone English-language technology, manufacturing and investment news skelet
 
 The public site is deliberately conventional: fast news, top stories, topic pages and business-style sections.
 
-## Product surfaces
-
-This repository now contains two intentionally separate public interfaces:
-
-- **TDR ASIA** — newsroom, investment/company coverage and Tracker.
-- **TDR MEGAPROJECT** — major-project database and tracker under `app/mega`.
-
-Production can attach a dedicated Mega hostname (for example `mega.example.com`) to the same deployment. `middleware.ts` rewrites that hostname to the internal `/mega` routes while keeping clean public URLs such as `/projects`. `/mega/**` remains available as a development/fallback path on the primary host.
-
-The products share repository infrastructure and may exchange structured events, but their navigation and visual chrome remain separate.
-
 ## Locked geographic mix
 
 Thailand: 60–70% of editorial output.
@@ -49,10 +38,8 @@ npm run dev
 ## v0.5 visual direction
 Public shell and Tracker restyled into a dense Thai business-newsroom aesthetic: masthead, dark category bar, breaking strip, hard section rules, compact headline lists, and Tracker presented as a premium editorial desk rather than a SaaS dashboard.
 
-
 ## v0.7 — Paywall
 Tracker is now explicitly gated: public news/company/project pages remain open; company/tag monitoring, saved radars, alerts, history and exports sit behind a newspaper-style subscription wall. Prototype pricing is ฿990/month individual and ฿4,900/month team.
-
 
 ## v0.9 backend status
 
@@ -62,17 +49,27 @@ Production server variables required: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY
 
 `GET /api/admin/health` verifies which backend the deployed app is actually using and returns live counts.
 
+## Super Newsroom rollout
+
+`/newsroom` is the internal TDR Group control room being added in small chunks. The current branch supports:
+
+- live read-only Radar from the existing candidate pool;
+- a minimal `stories` table in Supabase;
+- `Make Story` to promote one candidate into one idempotent newsroom Story;
+- duplicate clicks/concurrent requests resolve to the same Story;
+- no Facebook/X generation or publishing yet.
+
+The write endpoint is protected by the existing `ADMIN_TOKEN` mechanism and the `stories` table is service-role only.
+
 ## Production deployment gate
 
-This repository is intentionally **not linked to the existing `tdr` Vercel project**. Create/link a separate Vercel project named `tdr-asia` before deployment. Required production secrets:
+Keep this repository linked to its own Vercel project, `tdr-asia`; do not link it to the existing `tdr` project. Required production secrets:
 
 - `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SECRET_KEY`) from the dedicated **TDR ASIA** Supabase project
 - `OPENAI_API_KEY`
 - `ADMIN_TOKEN` (long random value)
 - `CRON_SECRET` (long random value)
 - `SITE_URL`
-
-For separate product hostnames also configure `NEXT_PUBLIC_ASIA_URL`, `NEXT_PUBLIC_MEGA_URL`, `MEGA_HOST`, and `MEGA_EVENT_INGEST_SECRET`.
 
 Optional LINE push:
 

@@ -1,4 +1,5 @@
 import type { Candidate, CmsArticle, CmsTag, CmsSource } from "./cms-types";
+import type { NewsroomStory, StorySourceContext, DistributionChannel } from "./newsroom-store";
 
 const API = "https://api.openai.com/v1/responses";
 
@@ -37,7 +38,7 @@ export async function discoverCandidates(sources: CmsSource[], priorUrls: string
   const text = await response(prompt);
   const rows = JSON.parse(cleanJson(text)) as any[];
   const now = new Date().toISOString();
-  return rows.slice(0,10).map((r,i)=>({
+  return rows.slice(0,10).map((r)=>({
     id: crypto.randomUUID(),
     title: String(r.title || "Untitled"),
     summary: String(r.summary || ""),
@@ -69,4 +70,80 @@ export async function generateArticle(candidate: Candidate, tags: CmsTag[]): Pro
     status: "draft",
     candidateId: candidate.id
   };
+}
+
+export async function generateSocialDraft(
+  story: NewsroomStory,
+  source: StorySourceContext,
+  channel: DistributionChannel,
+): Promise<string> {
+  const publicDestination = story.destinationUrl && /^https?:\/\//i.test(story.destinationUrl) ? story.destinationUrl : null;
+  const destination = publicDestination
+    ? `Destination URL: ${publicDestination}`
+    : story.destinationUrl
+      ? `Destination page is prepared internally at ${story.destinationUrl}, but the public site base URL is not configured. Do not print this relative path and do not add a link CTA.`
+      : "Destination URL: none";
+  const sourceLine = source.sourceUrl ? `${source.sourceName || "Source"}: ${source.sourceUrl}` : "No source URL is available; use only the Story facts below.";
+
+  const channelInstruction = channel === "facebook"
+    ? `Write a Thai-language Facebook post for the TDR Facebook page. The page covers automobiles, industry/investment and megaprojects. Lead with the strongest concrete fact or number. Make it easy to understand and share. Keep the tone confident, data-led and newsroom-like, not corporate PR and not AI-sounding. Use short paragraphs. Do not invent context, numbers or claims. If a public destination URL exists, end with one natural CTA line pointing readers there. Do not add generic engagement bait. Do not add more than 2 hashtags, and prefer none.`
+    : `Write a Thai-language X post for TDR. Make it sharper and more thesis-driven than Facebook: one defensible claim that invites disagreement, followed by the strongest supporting fact. Controlled provocation is good; rage bait, insults and unsupported certainty are not. Keep it concise enough for a normal X post unless the facts truly require a short 2-post thread. Do not invent context, numbers or claims. If a public destination URL exists, include it naturally. No generic engagement bait and no hashtag pile.`;
+
+  const prompt = `You are the social desk inside TDR Super Newsroom.\n\n${channelInstruction}\n\nSTORY\nHeadline: ${story.headline}\nSummary: ${story.summary || ""}\nVertical: ${story.vertical}\n${destination}\n\nSOURCE\n${sourceLine}\nPublished at: ${source.publishedAt || "unknown"}\n\nUse the selected source as the factual basis when it is available. You may open it to understand the facts, but do not wander into unrelated research or turn this into a fact-checking exercise. Preserve exact company names, places and numbers. Return ONLY the finished social copy as plain text. No JSON, no explanation, no labels.`;
+
+  const text = await response(prompt, process.env.OPENAI_WRITE_MODEL || "gpt-5.6-luna", Boolean(source.sourceUrl));
+  const copy = text.trim();
+  if (!copy) throw new Error("EMPTY_SOCIAL_DRAFT");
+  return copy;
+}
+
+export type CandidateAutomationScore = {
+  candidateId: string;
+  growthScore: number;
+  routeScore: number;
+  vertical: "auto" | "industry" | "mega" | "cross_vertical";
+  destinationType: "tdr_auto" | "tdr_asia" | "tdr_mega" | "none";
+  reason: string;
+};
+
+function clampScore(value: unknown) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(100, Math.round(number)));
+}
+
+export async function scoreCandidatesForAutomation(candidates: Candidate[]): Promise<CandidateAutomationScore[]> {
+  if (!candidates.length) return [];
+
+  const compact = candidates.map((candidate) => ({
+    id: candidate.id,
+    title: candidate.title,
+    summary: candidate.summary,
+    sourceName: candidate.sourceName,
+    publishedAt: candidate.publishedAt || null,
+    tags: candidate.suggestedTags,
+  }));
+
+  const prompt = `You are the triage desk for TDR Super Newsroom. TDR uses Facebook and X to grow a shared audience and route it into three products: TDR Auto (cars/market/data), TDR Asia (industry/investment), and TDR Mega (infrastructure/megaprojects).\n\nScore each candidate independently.\n\nGrowth score 0-100 = likelihood that a timely Thai-language Facebook/X post can win non-follower attention, shares, discussion or follower growth. Reward concrete numbers, major brands, large investments, surprising changes, strong Thailand relevance, market conflict and freshness. Penalize routine PR, vague policy statements, duplicates and niche items with no hook.\n\nRoute score 0-100 = how naturally interest can be routed into one of TDR Auto / TDR Asia / TDR Mega. This is product fit, not whether a destination URL already exists.\n\nChoose vertical: auto, industry, mega, or cross_vertical. Choose destinationType: tdr_auto, tdr_asia, tdr_mega, or none. Auto includes vehicle launches/prices/market/production. Industry includes manufacturing, investment, electronics, batteries, data centers, corporate expansion. Mega includes rail, road, airports, ports, utilities and major infrastructure.\n\nReturn ONLY a JSON array with exactly one object per candidate: candidateId, growthScore, routeScore, vertical, destinationType, reason. Reason must be one short sentence explaining the score; do not repeat the headline. Do not browse the web; score only what is supplied.\n\nCANDIDATES\n${JSON.stringify(compact)}`;
+
+  const text = await response(prompt, process.env.OPENAI_NEWS_MODEL || "gpt-5.6-luna", false);
+  const rows = JSON.parse(cleanJson(text)) as any[];
+  const allowedIds = new Set(candidates.map((candidate) => candidate.id));
+  const verticals = new Set(["auto", "industry", "mega", "cross_vertical"]);
+  const destinations = new Set(["tdr_auto", "tdr_asia", "tdr_mega", "none"]);
+
+  return rows.flatMap((row) => {
+    const candidateId = String(row.candidateId || "");
+    if (!allowedIds.has(candidateId)) return [];
+    const vertical = verticals.has(row.vertical) ? row.vertical : "industry";
+    const destinationType = destinations.has(row.destinationType) ? row.destinationType : "tdr_asia";
+    return [{
+      candidateId,
+      growthScore: clampScore(row.growthScore),
+      routeScore: clampScore(row.routeScore),
+      vertical,
+      destinationType,
+      reason: String(row.reason || "Automated newsroom triage"),
+    } as CandidateAutomationScore];
+  });
 }
