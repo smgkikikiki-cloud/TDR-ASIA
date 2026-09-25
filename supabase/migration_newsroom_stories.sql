@@ -24,6 +24,7 @@ create index if not exists stories_status_idx on public.stories (status);
 create or replace function public.set_stories_updated_at()
 returns trigger
 language plpgsql
+set search_path = pg_catalog
 as $$
 begin
   new.updated_at = now();
