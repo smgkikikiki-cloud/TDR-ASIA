@@ -27,7 +27,7 @@ function timeLabel(value?: string) {
 
 export default async function NewsroomPage() {
   const [state, stories] = await Promise.all([readCms(), listNewsroomStories()]);
-  const storyCandidateIds = new Set(stories.map((story) => story.candidateId));
+  const storyByCandidateId = new Map(stories.map((story) => [story.candidateId, story]));
   const radar = state.candidates
     .filter((candidate) => !candidate.generated && !candidate.ignored)
     .sort((a, b) => b.discoveredAt.localeCompare(a.discoveredAt));
@@ -53,8 +53,8 @@ export default async function NewsroomPage() {
             </p>
           </div>
           <div style={{ textAlign: "right", fontSize: 12, lineHeight: 1.5, color: "#555" }}>
-            <b style={{ display: "block", color: "#111" }}>Chunk 3</b>
-            Radar → Story write path live
+            <b style={{ display: "block", color: "#111" }}>Chunk 4</b>
+            Story Editor live
           </div>
         </header>
 
@@ -79,7 +79,7 @@ export default async function NewsroomPage() {
             </div>
 
             {visibleRadar.length ? visibleRadar.map((candidate, index) => {
-              const hasStory = storyCandidateIds.has(candidate.id);
+              const story = storyByCandidateId.get(candidate.id);
               return (
                 <article key={candidate.id} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, padding: "18px", borderBottom: "1px solid #e5e1da" }}>
                   <div style={{ fontSize: 12, fontWeight: 800, color: "#777", paddingTop: 3 }}>{String(index + 1).padStart(2, "0")}</div>
@@ -95,7 +95,7 @@ export default async function NewsroomPage() {
                     {candidate.summary ? <p style={{ margin: "7px 0 0", color: "#555", lineHeight: 1.45, fontSize: 14 }}>{candidate.summary}</p> : null}
                     <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                       {candidate.sourceUrl ? <a href={candidate.sourceUrl} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: 9, fontSize: 12, fontWeight: 800, color: "#111" }}>Open source ↗</a> : null}
-                      <MakeStoryButton candidateId={candidate.id} disabled={hasStory} />
+                      <MakeStoryButton candidateId={candidate.id} storyId={story?.id} />
                     </div>
                   </div>
                 </article>
@@ -110,9 +110,9 @@ export default async function NewsroomPage() {
           <aside style={{ display: "grid", gap: 18, alignContent: "start" }}>
             <section style={{ background: "#111", color: "#fff", padding: 20 }}>
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", opacity: .7 }}>Human attention</div>
-              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>One decision</h2>
+              <h2 style={{ fontSize: 28, margin: "8px 0 12px" }}>Edit only what matters</h2>
               <p style={{ margin: 0, lineHeight: 1.55, color: "#d8d8d8", fontSize: 14 }}>
-                Promote a Radar candidate into a Story. This chunk does not generate Facebook, X, articles or publish anything.
+                A Story can now be edited and routed to Auto, Asia, Mega or nowhere before social generation exists.
               </p>
             </section>
 
@@ -120,10 +120,10 @@ export default async function NewsroomPage() {
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Recent stories</div>
               <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
                 {recentStories.length ? recentStories.map((story) => (
-                  <div key={story.id} style={{ padding: "10px 0", borderTop: "1px solid #eee" }}>
+                  <a key={story.id} href={`/newsroom/story/${story.id}`} style={{ display: "block", padding: "10px 0", borderTop: "1px solid #eee", color: "#111", textDecoration: "none" }}>
                     <b style={{ display: "block", fontSize: 13, lineHeight: 1.3 }}>{story.headline}</b>
                     <div style={{ marginTop: 4, fontSize: 11, color: "#777", textTransform: "uppercase" }}>{story.vertical} · {story.status}</div>
-                  </div>
+                  </a>
                 )) : <div style={{ fontSize: 13, color: "#777" }}>No stories yet.</div>}
               </div>
             </section>
@@ -133,7 +133,7 @@ export default async function NewsroomPage() {
               <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
                 {[
                   ["Radar", "Live", true],
-                  ["Stories", "Write path live", true],
+                  ["Stories", "Editor live", true],
                   ["Queue", "Later", false],
                   ["Winners", "Later", false],
                   ["Sources", "Existing registry", false],
