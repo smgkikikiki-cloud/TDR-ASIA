@@ -18,6 +18,26 @@ export type NewsroomStoryUpdate = Pick<
   "headline" | "summary" | "vertical" | "destinationType" | "destinationUrl"
 >;
 
+export type DistributionChannel = "facebook" | "x";
+
+export type DistributionItem = {
+  id: string;
+  storyId: string;
+  channel: DistributionChannel;
+  copy: string;
+  status: "draft" | "ready" | "posted";
+  destinationUrl: string | null;
+  generatedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type StorySourceContext = {
+  sourceName: string | null;
+  sourceUrl: string | null;
+  publishedAt: string | null;
+};
+
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 
@@ -57,6 +77,20 @@ function mapStory(row: any): NewsroomStory {
   };
 }
 
+function mapDistributionItem(row: any): DistributionItem {
+  return {
+    id: row.id,
+    storyId: row.story_id,
+    channel: row.channel,
+    copy: row.copy || "",
+    status: row.status,
+    destinationUrl: row.destination_url ?? null,
+    generatedAt: row.generated_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 export async function listNewsroomStories(): Promise<NewsroomStory[]> {
   if (!configured()) return [];
   const rows = await rest<any[]>("stories?select=*&order=created_at.desc");
@@ -67,6 +101,16 @@ export async function getNewsroomStory(storyId: string): Promise<NewsroomStory |
   if (!configured()) return null;
   const rows = await rest<any[]>(`stories?select=*&id=eq.${encodeURIComponent(storyId)}&limit=1`);
   return rows[0] ? mapStory(rows[0]) : null;
+}
+
+export async function getStorySourceContext(candidateId: string): Promise<StorySourceContext> {
+  const rows = await rest<any[]>(`candidates?select=source_name,source_url,published_at&id=eq.${encodeURIComponent(candidateId)}&limit=1`);
+  const row = rows[0] || {};
+  return {
+    sourceName: row.source_name ?? null,
+    sourceUrl: row.source_url ?? null,
+    publishedAt: row.published_at ?? null,
+  };
 }
 
 export async function updateNewsroomStory(storyId: string, update: NewsroomStoryUpdate): Promise<NewsroomStory> {
@@ -84,6 +128,35 @@ export async function updateNewsroomStory(storyId: string, update: NewsroomStory
 
   if (!rows[0]) throw new Error("Story not found");
   return mapStory(rows[0]);
+}
+
+export async function listDistributionItems(storyId: string): Promise<DistributionItem[]> {
+  if (!configured()) return [];
+  const rows = await rest<any[]>(`distribution_items?select=*&story_id=eq.${encodeURIComponent(storyId)}&order=channel.asc`);
+  return rows.map(mapDistributionItem);
+}
+
+export async function saveDistributionItem(
+  storyId: string,
+  channel: DistributionChannel,
+  copy: string,
+  destinationUrl: string | null,
+  generated = false,
+): Promise<DistributionItem> {
+  const rows = await rest<any[]>("distribution_items?on_conflict=story_id,channel", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify({
+      story_id: storyId,
+      channel,
+      copy,
+      status: "draft",
+      destination_url: destinationUrl || null,
+      ...(generated ? { generated_at: new Date().toISOString() } : {}),
+    }),
+  });
+  if (!rows[0]) throw new Error("Distribution draft was not saved");
+  return mapDistributionItem(rows[0]);
 }
 
 export async function createStoryFromCandidate(candidateId: string): Promise<NewsroomStory> {
