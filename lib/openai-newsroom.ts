@@ -1,4 +1,5 @@
 import type { Candidate, CmsArticle, CmsTag, CmsSource } from "./cms-types";
+import type { NewsroomStory, StorySourceContext, DistributionChannel } from "./newsroom-store";
 
 const API = "https://api.openai.com/v1/responses";
 
@@ -69,4 +70,24 @@ export async function generateArticle(candidate: Candidate, tags: CmsTag[]): Pro
     status: "draft",
     candidateId: candidate.id
   };
+}
+
+export async function generateSocialDraft(
+  story: NewsroomStory,
+  source: StorySourceContext,
+  channel: DistributionChannel,
+): Promise<string> {
+  const destination = story.destinationUrl ? `Destination URL: ${story.destinationUrl}` : "Destination URL: none";
+  const sourceLine = source.sourceUrl ? `${source.sourceName || "Source"}: ${source.sourceUrl}` : "No source URL is available; use only the Story facts below.";
+
+  const channelInstruction = channel === "facebook"
+    ? `Write a Thai-language Facebook post for the TDR Facebook page. The page covers automobiles, industry/investment and megaprojects. Lead with the strongest concrete fact or number. Make it easy to understand and share. Keep the tone confident, data-led and newsroom-like, not corporate PR and not AI-sounding. Use short paragraphs. Do not invent context, numbers or claims. If a destination URL exists, end with one natural CTA line pointing readers there. Do not add generic engagement bait. Do not add more than 2 hashtags, and prefer none.`
+    : `Write a Thai-language X post for TDR. Make it sharper and more thesis-driven than Facebook: one defensible claim that invites disagreement, followed by the strongest supporting fact. Controlled provocation is good; rage bait, insults and unsupported certainty are not. Keep it concise enough for a normal X post unless the facts truly require a short 2-post thread. Do not invent context, numbers or claims. If a destination URL exists, include it naturally. No generic engagement bait and no hashtag pile.`;
+
+  const prompt = `You are the social desk inside TDR Super Newsroom.\n\n${channelInstruction}\n\nSTORY\nHeadline: ${story.headline}\nSummary: ${story.summary || ""}\nVertical: ${story.vertical}\n${destination}\n\nSOURCE\n${sourceLine}\nPublished at: ${source.publishedAt || "unknown"}\n\nUse the selected source as the factual basis when it is available. You may open it to understand the facts, but do not wander into unrelated research or turn this into a fact-checking exercise. Preserve exact company names, places and numbers. Return ONLY the finished social copy as plain text. No JSON, no explanation, no labels.`;
+
+  const text = await response(prompt, process.env.OPENAI_WRITE_MODEL || "gpt-5.6-luna", Boolean(source.sourceUrl));
+  const copy = text.trim();
+  if (!copy) throw new Error("EMPTY_SOCIAL_DRAFT");
+  return copy;
 }
