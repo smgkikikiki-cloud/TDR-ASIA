@@ -22,8 +22,10 @@ export type MegaProjectParticipant = {
   companyId:string; entityKey:string; name:string; companyType:string|null; website:string|null; role:string; sourceUrl:string|null; verifiedAt:string|null;
 };
 
+export type MegaPackageRecordType = 'opportunity'|'awarded_package'|'tracked_workstream';
+
 export type MegaPackage = {
-  id:string; projectId:string; packageCode:string; name:string; category:string|null; status:string; valueThb:number|null;
+  id:string; projectId:string; packageCode:string; name:string; category:string|null; status:string; recordType:MegaPackageRecordType; valueThb:number|null;
   procurementMethod:string|null; description:string|null; sourceUrl:string|null; sourceLabel:string|null; verifiedAt:string|null;
   awardDate:string|null; plannedStartDate:string|null; plannedCompletionDate:string|null; updatedAt:string;
   project?:MegaProject;
@@ -41,7 +43,7 @@ async function rest<T>(resource:string):Promise<T>{
 }
 
 const mapProject=(r:any):MegaProject=>({id:r.id,slug:r.slug,name:r.name,sector:r.sector,province:r.province,location:r.location,stage:r.stage,valueThb:Number(r.value_thb||0),owner:r.owner_name,summary:r.summary,sourceUrl:r.source_url,sourceLabel:r.source_label,verifiedAt:r.last_verified_at,updatedAt:r.updated_at});
-const mapPackage=(r:any):MegaPackage=>({id:r.id,projectId:r.project_id,packageCode:r.package_code,name:r.name,category:r.category??null,status:r.status,valueThb:r.value_thb==null?null:Number(r.value_thb),procurementMethod:r.procurement_method??null,description:r.description??null,sourceUrl:r.source_url??null,sourceLabel:r.source_label??null,verifiedAt:r.verified_at??null,awardDate:r.award_date??null,plannedStartDate:r.planned_start_date??null,plannedCompletionDate:r.planned_completion_date??null,updatedAt:r.updated_at});
+const mapPackage=(r:any):MegaPackage=>({id:r.id,projectId:r.project_id,packageCode:r.package_code,name:r.name,category:r.category??null,status:r.status,recordType:(r.record_type||'tracked_workstream') as MegaPackageRecordType,valueThb:r.value_thb==null?null:Number(r.value_thb),procurementMethod:r.procurement_method??null,description:r.description??null,sourceUrl:r.source_url??null,sourceLabel:r.source_label??null,verifiedAt:r.verified_at??null,awardDate:r.award_date??null,plannedStartDate:r.planned_start_date??null,plannedCompletionDate:r.planned_completion_date??null,updatedAt:r.updated_at});
 
 export async function getMegaProjects(){const rows=await rest<any[]>('mega_projects?select=*&order=value_thb.desc.nullslast');return rows.map(mapProject);}
 export async function getMegaProject(slug:string){const rows=await rest<any[]>(`mega_projects?select=*&slug=eq.${encodeURIComponent(slug)}&limit=1`);return rows[0]?mapProject(rows[0]):null;}
