@@ -1,3 +1,6 @@
+-- Verified-only package layer for TDR Mega.
+-- Do not seed synthetic tenders/packages from project names. Package records must retain source evidence.
+
 create table if not exists public.mega_packages (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.mega_projects(id) on delete cascade,
