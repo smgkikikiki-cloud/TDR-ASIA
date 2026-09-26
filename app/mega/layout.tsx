@@ -17,8 +17,8 @@ export default async function MegaLayout({children}:{children:React.ReactNode}){
   const asiaUrl = process.env.NEXT_PUBLIC_ASIA_URL || '/';
   return <div className="megaRoot">
     <div className="megaNetwork"><div className="megaShell"><span>TDR NETWORK</span><a href={asiaUrl}>ASIA</a><strong>MEGAPROJECT</strong></div></div>
-    <header className="megaHeader"><div className="megaShell megaHeaderInner"><Link href={base || '/'} className="megaBrand">TDR <span>MEGAPROJECT</span></Link><nav><Link href={`${base}/projects`}>Projects</Link><Link href={`${base}/companies`}>Companies</Link><Link href={`${base}/news`}>News</Link></nav></div></header>
+    <header className="megaHeader"><div className="megaShell megaHeaderInner"><Link href={base || '/'} className="megaBrand">TDR <span>MEGAPROJECT</span></Link><nav><Link href={`${base}/projects`}>Projects</Link><Link href={`${base}/opportunities`}>Opportunities</Link><Link href={`${base}/companies`}>Companies</Link><Link href={`${base}/news`}>News</Link></nav></div></header>
     <main>{children}</main>
-    <footer className="megaFooter"><div className="megaShell">TDR Megaproject · Thailand major projects tracker · Prototype data until source verification is complete.</div></footer>
+    <footer className="megaFooter"><div className="megaShell">TDR Megaproject · Thailand capital projects intelligence · Sourced records retain verification links for audit.</div></footer>
   </div>
 }
