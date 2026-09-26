@@ -26,6 +26,10 @@ function envNumber(name: string, fallback: number) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function isDealRadar(candidate: Candidate | undefined) {
+  return Boolean(candidate?.suggestedTags.some((tag) => tag.toLowerCase() === "deal-radar"));
+}
+
 export async function autoPromoteDiscoveredCandidates(candidates: Candidate[]): Promise<NewsroomAutomationResult> {
   const result: NewsroomAutomationResult = {
     scored: 0,
@@ -69,9 +73,18 @@ export async function autoPromoteDiscoveredCandidates(candidates: Candidate[]): 
     return result;
   }
 
+  const candidateById = new Map(eligibleCandidates.map((candidate) => [candidate.id, candidate]));
+  const forcedDealRadarIds = new Set(
+    eligibleCandidates.filter((candidate) => isDealRadar(candidate)).map((candidate) => candidate.id),
+  );
+
   const selected = scores
-    .filter((score) => score.growthScore >= growthMin && (score.routeScore >= routeMin || score.growthScore >= 92))
-    .sort((a, b) => (b.growthScore * 0.7 + b.routeScore * 0.3) - (a.growthScore * 0.7 + a.routeScore * 0.3))
+    .filter((score) => forcedDealRadarIds.has(score.candidateId) || (score.growthScore >= growthMin && (score.routeScore >= routeMin || score.growthScore >= 92)))
+    .sort((a, b) => {
+      const forcedDelta = Number(forcedDealRadarIds.has(b.candidateId)) - Number(forcedDealRadarIds.has(a.candidateId));
+      if (forcedDelta) return forcedDelta;
+      return (b.growthScore * 0.7 + b.routeScore * 0.3) - (a.growthScore * 0.7 + a.routeScore * 0.3);
+    })
     .slice(0, maxPerRun);
 
   for (const decision of selected) {
@@ -82,13 +95,17 @@ export async function autoPromoteDiscoveredCandidates(candidates: Candidate[]): 
         continue;
       }
 
+      const candidate = candidateById.get(decision.candidateId);
+      const dealRadar = isDealRadar(candidate);
       let story = await createStoryFromCandidate(decision.candidateId);
       story = await applyAutomationDecision(story.id, {
         growthScore: decision.growthScore,
         routeScore: decision.routeScore,
-        reason: decision.reason,
+        reason: dealRadar ? `Deal Radar direct-to-writer: ${decision.reason}` : decision.reason,
         vertical: decision.vertical,
-        destinationType: decision.destinationType,
+        // Deal Radar is a business-news lane. Force a TDR Asia destination so resolution creates the article draft;
+        // Facebook/X distribution still uses the story's scored vertical for tone/routing context.
+        destinationType: dealRadar ? "tdr_asia" : decision.destinationType,
       });
 
       try {
