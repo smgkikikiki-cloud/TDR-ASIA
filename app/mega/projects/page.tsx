@@ -1,5 +1,15 @@
-import Link from 'next/link';
 import { headers } from 'next/headers';
-import { getMegaProjects, fmtThb } from '@/lib/mega-store';
+import { getMegaProjects } from '@/lib/mega-store';
+import { MegaProjectExplorer } from '@/components/mega/MegaProjectExplorer';
+
 function megaBase(host:string){const bare=host.split(':')[0].toLowerCase();const configured=process.env.MEGA_HOST?.toLowerCase();return Boolean((configured&&bare===configured)||bare.startsWith('mega.'))?'':'/mega';}
-export default async function ProjectsPage(){const h=await headers();const base=megaBase(h.get('host')||'');const projects=await getMegaProjects();return <section className="megaSection"><div className="megaShell"><div className="megaSectionHead"><div><div className="megaEyebrow">Database</div><h2>Projects</h2></div><span className="megaMuted">{projects.length} sourced records</span></div><table className="megaTable"><thead><tr><th>Project</th><th>Sector</th><th>Province</th><th>Stage</th><th>Value</th></tr></thead><tbody>{projects.map(p=><tr key={p.slug}><td><Link href={`${base}/projects/${p.slug}`}>{p.name}</Link><div className="megaMuted">{p.owner}</div></td><td>{p.sector}</td><td>{p.province||'—'}</td><td>{p.stage}</td><td>{fmtThb(p.valueThb)}</td></tr>)}</tbody></table></div></section>}
+
+export default async function ProjectsPage(){
+  const h=await headers();
+  const base=megaBase(h.get('host')||'');
+  const projects=await getMegaProjects();
+  return <section className="megaSection"><div className="megaShell">
+    <div className="megaSectionHead"><div><div className="megaEyebrow">Project intelligence database</div><h2>Project Explorer</h2><p className="megaMuted megaSectionIntro">Search Thailand's tracked capital projects by sector, stage, location and investment value. Save projects locally to build a working watchlist before opening the full project profile.</p></div><span className="megaMuted">{projects.length} sourced records</span></div>
+    <MegaProjectExplorer projects={projects} base={base}/>
+  </div></section>;
+}
